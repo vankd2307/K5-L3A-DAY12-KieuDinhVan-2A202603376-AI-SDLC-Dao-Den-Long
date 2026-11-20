@@ -62,13 +62,23 @@ Thời gian đã tính cả khởi động node + tsx. Test CLI cũng tự kiể
 | # | Tính năng | Kết quả |
 |---|---|---|
 | F1 | Gió Lạc (dải lụa #8FA3B8) | Luật: đạt (P13). Hiển thị: **chưa kiểm bằng mắt** |
-| F2 | Bùa Gió (đỏ #C8102E viền vàng) | Luật: đạt (P14). Hiển thị: **chưa kiểm bằng mắt** |
+| F2 | Bùa Gió (đỏ #C8102E viền vàng) | Đạt: luật (P14) + chơi tay (thấy lá bùa trên cầu, HUD hiện "Bùa Gió 2s") |
 | F3 | Menu → giới thiệu (lời Ông Đăng) → chơi → kết quả → đêm sau → Bình Minh; thua thì chơi lại | Code xong; ảnh menu có. **Chưa chơi trọn chuỗi** |
-| F4 | Tạm dừng Esc/P: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu | Logic: đạt (P16). Menu: **chưa kiểm bằng mắt** |
+| F4 | Tạm dừng Esc/P: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu | Đạt: logic (P16) + chơi tay (menu đủ 4 nút, đồng hồ đứng yên) |
 | F5 | Cài đặt âm lượng, độ nhạy chuột, lưu localStorage | Code xong; **chưa kiểm** việc tải lại trang |
 | F6 | Nhạc nền + 12 hiệu ứng (WebAudio tổng hợp) | Code xong; **chưa nghe thử** |
-| F7 | HUD đầy đủ | Đạt (ảnh). Đồng hồ đỏ nhấp nháy ≤ 30 s: **chưa chụp** |
+| F7 | HUD đầy đủ | Đạt (ảnh headless + chơi tay: mũi tên, hồi chiêu, thời gian bùa, báo gió). Đồng hồ đỏ nhấp nháy ≤ 30 s: **chưa chụp** |
 | F8 | Bảng màu chuẩn, ánh sáng môi trường = 0.15 + 0.55 × tỉ lệ | Các mã hex lấy từ `src/render/palette.ts`; công thức ở `ambientFor()` |
+
+### Chơi tay trên trình duyệt (`npm run dev`)
+
+| Ảnh | Cho thấy |
+|---|---|
+| ![](screenshots/play-pause-menu.png) | F4: Đêm 1 đang tạm dừng, 2/5 đèn, 400 điểm; Bóng Mực có viền #7A3CFF |
+| ![](screenshots/play-night2-bridge-charm.png) | Đêm 2: cầu tre, Bùa Gió đỏ viền vàng, bục nhảy vàng, icon hồi chiêu Lướt đang chạy, mũi tên chỉ đèn |
+| ![](screenshots/play-night3-wind.png) | Đêm 3: cơn gió (lá bay, chữ "Gió mạnh"), "Bùa Gió 2s", tầng 1 và tầng 2 phía sau |
+
+Sửa sau khi chơi tay: đèn đã sáng trông gần trắng (lớp phát sáng màu lõi #FFE9B0 quá mạnh), nên đổi lớp phát sáng sang #FFB347 với cường độ 0.75.
 
 ## Hồi quy Phase 1
 

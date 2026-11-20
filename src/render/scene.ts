@@ -111,8 +111,8 @@ export class SceneView {
       o.glow += (target - o.glow) * Math.min(1, dt * 2);
       o.light.intensity = o.glow * 40;
       o.lamp.material.color.setHex(l.lit ? C.lit : C.off);
-      o.lamp.material.emissive.setHex(l.lit ? C.core : C.lit);
-      o.lamp.material.emissiveIntensity = l.lit ? 1.2 : o.glow * 1.5;
+      o.lamp.material.emissive.setHex(C.lit); // warm orange, not washed-out white
+      o.lamp.material.emissiveIntensity = l.lit ? 0.75 : o.glow * 1.5;
     });
     this.ambient.intensity = ambientFor(lit, game.lanterns.length);
 
