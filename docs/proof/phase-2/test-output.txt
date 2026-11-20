@@ -1,62 +1,65 @@
- ✓ tests/contract.test.ts > game.contract.json (v1.1) > declares contract 1.1 and the commands 3ms
+ ✓ tests/settings.test.ts > F5 settings persistence > defaults when nothing is saved 3ms
+ ✓ tests/settings.test.ts > F5 settings persistence > saved volume and sensitivity are loaded again (survive a reload) 0ms
+ ✓ tests/settings.test.ts > F5 settings persistence > corrupt or out-of-range values fall back safely 0ms
+ ✓ tests/contract.test.ts > game.contract.json (v1.1) > declares contract 1.1 and the commands 2ms
  ✓ tests/contract.test.ts > game.contract.json (v1.1) > tuning mirrors the numbers the game uses 1ms
  ✓ tests/contract.test.ts > game.contract.json (v1.1) > tuning equals the Ticket-02 standard table 1ms
- ✓ tests/contract.test.ts > tick model and output > tick 0 snapshot is before input; night_start at tick 0; --ticks N runs N steps 5ms
- ✓ tests/contract.test.ts > tick model and output > snapshot has every v1.1 field 2ms
+ ✓ tests/contract.test.ts > tick model and output > tick 0 snapshot is before input; night_start at tick 0; --ticks N runs N steps 3ms
+ ✓ tests/contract.test.ts > tick model and output > snapshot has every v1.1 field 1ms
  ✓ tests/contract.test.ts > tick model and output > maps match the standard lantern tables 1ms
- ✓ tests/contract.test.ts > tick model and output > end is always the last line 2ms
+ ✓ tests/contract.test.ts > tick model and output > end is always the last line 1ms
  ✓ tests/contract.test.ts > architecture > src/core imports nothing from three, node or render 2ms
  ✓ tests/rules.test.ts > P2 movement and jump > runs 6 m/s along +Z at yaw 0 (vel reported) 6ms
  ✓ tests/rules.test.ts > P2 movement and jump > rotates by cam_yaw_deg and normalises long vectors 1ms
  ✓ tests/rules.test.ts > P2 movement and jump > jumps at 7 m/s with g=20 (apex ~1.225 m), only from the ground 3ms
- ✓ tests/rules.test.ts > P3 dash > 14 m/s for 12 ticks in the facing direction when standing still, cooldown 90 ticks from start 5ms
+ ✓ tests/rules.test.ts > P3 dash > 14 m/s for 12 ticks in the facing direction when standing still, cooldown 90 ticks from start 4ms
  ✓ tests/rules.test.ts > P3 dash > dash in the air keeps altitude 1ms
- ✓ tests/rules.test.ts > P4 motes > starts with 20 random motes at 20 distinct spawn points; +1 at tick 240 15ms
- ✓ tests/rules.test.ts > P4 motes > picks within XZ 1.0 and height 1.5, up to capacity 10 2ms
- ✓ tests/rules.test.ts > P4 motes > mote pickup gives no score (score is per deposited mote) 1ms
- ✓ tests/rules.test.ts > P5 lanterns > deposits min(carried, missing) several times; lights at 10; +10/mote, +100/lantern 2ms
+ ✓ tests/rules.test.ts > P4 motes > starts with 20 random motes at 20 distinct spawn points; +1 at tick 240 11ms
+ ✓ tests/rules.test.ts > P4 motes > picks within XZ 1.0 and height 1.5, up to capacity 10 1ms
+ ✓ tests/rules.test.ts > P4 motes > mote pickup gives no score (score is per deposited mote) 0ms
+ ✓ tests/rules.test.ts > P5 lanterns > deposits min(carried, missing) several times; lights at 10; +10/mote, +100/lantern 1ms
  ✓ tests/rules.test.ts > P5 lanterns > interact radius is 2.0; ties go to the smaller id 1ms
- ✓ tests/rules.test.ts > P6 safe zone > an unlit lantern does not protect; a lit lantern keeps shades at 6 m 27ms
- ✓ tests/rules.test.ts > P6 safe zone > a shade inside when the lantern lights is pushed to the edge within 30 ticks, harmless meanwhile 1ms
- ✓ tests/rules.test.ts > P7 pulse > costs 3, 3D radius 5 from feet+0.8, stun 120, push 4 m over 15 ticks, +5 each, cooldown 180 9ms
- ✓ tests/rules.test.ts > P7 pulse > re-pulsing a stunned shade refreshes the stun and still scores 2ms
+ ✓ tests/rules.test.ts > P6 safe zone > an unlit lantern does not protect; a lit lantern keeps shades at 6 m 23ms
+ ✓ tests/rules.test.ts > P6 safe zone > a shade inside when the lantern lights is pushed to the edge within 30 ticks, harmless meanwhile 2ms
+ ✓ tests/rules.test.ts > P7 pulse > costs 3, 3D radius 5 from feet+0.8, stun 120, push 4 m over 15 ticks, +5 each, cooldown 180 6ms
+ ✓ tests/rules.test.ts > P7 pulse > re-pulsing a stunned shade refreshes the stun and still scores 1ms
  ✓ tests/rules.test.ts > P7 pulse > does nothing with fewer than 3 motes 0ms
- ✓ tests/rules.test.ts > P8 shades > spawn 2 at tick 300 then 1 every 480 ticks on Night 1, starting in `spawning` 24ms
- ✓ tests/rules.test.ts > P8 shades > detects at 12 m (wander -> chase) 1ms
- ✓ tests/rules.test.ts > P8 shades > chases at 4 m/s on Night 1 and 4.5 m/s on Night 3 3ms
- ✓ tests/rules.test.ts > P9 getting hit > -1 flame, drops floor(n/2) dropped motes in a 1.5-2.5 m ring (ttl 8 s), invuln 90, shade recoils 8ms
+ ✓ tests/rules.test.ts > P8 shades > spawn 2 at tick 300 then 1 every 480 ticks on Night 1, starting in `spawning` 17ms
+ ✓ tests/rules.test.ts > P8 shades > detects at 12 m (wander -> chase) 0ms
+ ✓ tests/rules.test.ts > P8 shades > chases at 4 m/s on Night 1 and 4.5 m/s on Night 3 1ms
+ ✓ tests/rules.test.ts > P9 getting hit > -1 flame, drops floor(n/2) dropped motes in a 1.5-2.5 m ring (ttl 8 s), invuln 90, shade recoils 7ms
  ✓ tests/rules.test.ts > P9 getting hit > at most one flame per tick even with two shades touching 0ms
  ✓ tests/rules.test.ts > P9 getting hit > dropped motes expire after 480 ticks 1ms
- ✓ tests/rules.test.ts > P10 falling off > -1 flame, loses all motes, waits 60 ticks, respawns at start with 90 ticks invuln 7ms
- ✓ tests/rules.test.ts > P10 falling off > falling with the last flame loses immediately 2ms
- ✓ tests/rules.test.ts > P11 win / lose > lighting the last lantern wins; bonus floor(s left) x2 + 50 x flames 3ms
- ✓ tests/rules.test.ts > P11 win / lose > winning on the exact time-out tick still wins 1ms
- ✓ tests/rules.test.ts > P11 win / lose > dawn when time runs out 3ms
- ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 2: the bridge holds, beside it you fall 4ms
- ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 2: launch pad throws Mây to the other island in ~1.4 s 3ms
- ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 3: tier walls block, ramps climb, pad reaches tier 2, the tower blocks 3ms
- ✓ tests/rules.test.ts > P13 drifters > idle -> chase (carry >= 5, <= 15 m) -> steal min(3, n) -> flee 240 ticks -> removed 13ms
- ✓ tests/rules.test.ts > P13 drifters > stays idle when Mây carries fewer than 5 1ms
+ ✓ tests/rules.test.ts > P10 falling off > -1 flame, loses all motes, waits 60 ticks, respawns at start with 90 ticks invuln 4ms
+ ✓ tests/rules.test.ts > P10 falling off > falling with the last flame loses immediately 1ms
+ ✓ tests/rules.test.ts > P11 win / lose > lighting the last lantern wins; bonus floor(s left) x2 + 50 x flames 1ms
+ ✓ tests/rules.test.ts > P11 win / lose > winning on the exact time-out tick still wins 0ms
+ ✓ tests/rules.test.ts > P11 win / lose > dawn when time runs out 1ms
+ ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 2: the bridge holds, beside it you fall 2ms
+ ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 2: launch pad throws Mây to the other island in ~1.4 s 2ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > writes JSONL ending with an end line and exits 0 269ms
+ ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 3: tier walls block, ramps climb, pad reaches tier 2, the tower blocks 2ms
+ ✓ tests/rules.test.ts > P13 drifters > idle -> chase (carry >= 5, <= 15 m) -> steal min(3, n) -> flee 240 ticks -> removed 9ms
+ ✓ tests/rules.test.ts > P13 drifters > stays idle when Mây carries fewer than 5 0ms
  ✓ tests/rules.test.ts > P13 drifters > pulse on a chasing drifter makes it flee empty-handed; on a fleeing thief it drops the loot 1ms
  ✓ tests/rules.test.ts > P14 wind charm > pick-up gives 600 ticks of 7.2 m/s and cooldown-free dash; respawns after 2700 ticks 2ms
- ✓ tests/rules.test.ts > P15 wind (Night 3) > a 300-tick gust every 1800 ticks pushes the player 2 m/s 56ms
+ ✓ tests/rules.test.ts > P15 wind (Night 3) > a 300-tick gust every 1800 ticks pushes the player 2 m/s 47ms
  ✓ tests/rules.test.ts > P16 pause > tick advances, sim_tick and time freeze, state paused, paused/resumed events 2ms
- ✓ tests/rules.test.ts > P17 determinism > night 1: same seed -> identical output 75ms
- ✓ tests/rules.test.ts > P17 determinism > night 2: same seed -> identical output 29ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > writes JSONL ending with an end line and exits 0 399ms
- ✓ tests/rules.test.ts > P17 determinism > night 3: same seed -> identical output 193ms
- ✓ tests/rules.test.ts > P17 determinism > drifters spawn at tick 1200 on Night 2 2ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > same args twice -> byte-identical output 739ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > accepts JSONL inputs (one frame per line) 254ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (broken JSON) -> exit 2 with stderr 321ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (non-increasing ticks) -> exit 2 with stderr 260ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (bad move) -> exit 2 with stderr 246ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (bad button type) -> exit 2 with stderr 247ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > malformed scenario -> exit 2 247ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > --night 4 -> exit 2 234ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > --night 2 runs and reports the night 238ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > --night 3 runs and reports the night 241ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > a full Night 3 (21600 ticks) finishes in <= 30 s 352ms
- ✓ tests/cli.test.ts > headless CLI (contract B) > missing file -> non-zero exit 262ms
- Test Files  3 passed (3)
-      Tests  60 passed (60)
+ ✓ tests/rules.test.ts > P17 determinism > night 1: same seed -> identical output 50ms
+ ✓ tests/rules.test.ts > P17 determinism > night 2: same seed -> identical output 17ms
+ ✓ tests/rules.test.ts > P17 determinism > night 3: same seed -> identical output 118ms
+ ✓ tests/rules.test.ts > P17 determinism > drifters spawn at tick 1200 on Night 2 1ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > same args twice -> byte-identical output 512ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > accepts JSONL inputs (one frame per line) 233ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (broken JSON) -> exit 2 with stderr 216ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (non-increasing ticks) -> exit 2 with stderr 225ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (bad move) -> exit 2 with stderr 237ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (bad button type) -> exit 2 with stderr 210ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed scenario -> exit 2 225ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > --night 4 -> exit 2 220ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > --night 2 runs and reports the night 215ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > --night 3 runs and reports the night 230ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > a full Night 3 (21600 ticks) finishes in <= 30 s 306ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > missing file -> non-zero exit 231ms
+ Test Files  4 passed (4)
+      Tests  63 passed (63)

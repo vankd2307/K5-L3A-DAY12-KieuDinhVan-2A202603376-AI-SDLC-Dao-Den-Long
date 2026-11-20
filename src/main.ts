@@ -1,4 +1,4 @@
-import { Game, TICK_RATE, type TimedEvent } from './core';
+import { applyScenario, Game, TICK_RATE, type TimedEvent } from './core';
 import { Sound, type Sfx } from './render/audio';
 import { Hud } from './render/hud';
 import { createControls } from './render/input';
@@ -156,6 +156,8 @@ function playEvents(events: TimedEvent[]): void {
 
 // ------------------------------------------------------------ loop: fixed 60 Hz logic, render at display rate
 const DT = 1 / TICK_RATE;
+// &instant shows the result screen without the 1.5 s pause (headless screenshots run only a few frames)
+const RESULT_DELAY = new URLSearchParams(location.search).has('instant') ? 0 : 1.5;
 let acc = 0;
 let last = performance.now();
 let wasPaused = false;
@@ -183,7 +185,7 @@ function frame(now: number): void {
     wasPaused = paused;
     if (game.over) {
       resultTimer += dt;
-      if (resultTimer > 1.5) {
+      if (resultTimer > RESULT_DELAY) {
         resultTimer = 0;
         finishNight();
       }
@@ -198,7 +200,15 @@ function frame(now: number): void {
 }
 hud.show(false);
 show('menu');
-// ?night=2 jumps straight into a night (testing / demo recording)
-const direct = Number(new URLSearchParams(location.search).get('night'));
-if (direct === 1 || direct === 2 || direct === 3) startNight(direct, false);
+// Testing / demo hooks: ?night=2 jumps straight into a night; &scenario=<contract-D JSON> sets it up.
+const params = new URLSearchParams(location.search);
+const direct = Number(params.get('night'));
+if (direct === 1 || direct === 2 || direct === 3) {
+  startNight(direct, false);
+  const sc = params.get('scenario');
+  if (sc) {
+    applyScenario(game, JSON.parse(sc));
+    view.load(game);
+  }
+}
 requestAnimationFrame(frame);

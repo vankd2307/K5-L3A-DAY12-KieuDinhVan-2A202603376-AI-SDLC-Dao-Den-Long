@@ -394,8 +394,8 @@ export class SceneView {
     const group = new THREE.Group();
     const mat = new THREE.MeshStandardMaterial({ color: C.drifter, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: C.drifter, emissiveIntensity: 0.2 });
     const strips = [0, 1, 2, 3, 4].map((i) => {
-      const s = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.18), mat);
-      s.position.z = -i * 0.4;
+      const s = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.35), mat);
+      s.position.z = -i * 0.7;
       group.add(s);
       return s;
     });

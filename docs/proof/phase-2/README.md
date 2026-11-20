@@ -2,7 +2,7 @@
 
 Máy: Intel i5-11400H, Windows 11, Node 22.21.0. Tiêu chí P1–P18 và F1–F8 lấy từ [spec-phase-2.md](../../notes/spec-phase-2.md).
 
-## Test tự động: `npm test` → 60/60 đạt
+## Test tự động: `npm test` → 63/63 đạt (60 luật/contract/CLI + 3 lưu cài đặt)
 
 Danh sách đầy đủ: [test-output.txt](test-output.txt). Mỗi nhóm `describe` mang mã tiêu chí tương ứng.
 
@@ -61,13 +61,13 @@ Thời gian đã tính cả khởi động node + tsx. Test CLI cũng tự kiể
 
 | # | Tính năng | Kết quả |
 |---|---|---|
-| F1 | Gió Lạc (dải lụa #8FA3B8) | Luật: đạt (P13). Hiển thị: **chưa kiểm bằng mắt** |
+| F1 | Gió Lạc (dải lụa #8FA3B8) | Đạt: luật (P13) + ảnh dựng bằng scenario (dải lụa xám xanh trước mặt Mây) |
 | F2 | Bùa Gió (đỏ #C8102E viền vàng) | Đạt: luật (P14) + chơi tay (thấy lá bùa trên cầu, HUD hiện "Bùa Gió 2s") |
-| F3 | Menu → giới thiệu (lời Ông Đăng) → chơi → kết quả → đêm sau → Bình Minh; thua thì chơi lại | Menu và giới thiệu Đêm 1: đạt (chơi tay). Màn kết quả, chuyển đêm, Bình Minh: **chưa kiểm** |
+| F3 | Menu → giới thiệu (lời Ông Đăng) → chơi → kết quả → đêm sau → Bình Minh; thua thì chơi lại | Menu, giới thiệu: đạt (chơi tay). Màn thắng (nút "Đêm tiếp theo"), màn thua (nút "Chơi lại Đêm"), Bình Minh có tổng điểm: đạt (ảnh dựng bằng scenario). Bấm nút để chuyển sang đêm sau: **chưa kiểm bằng tay** |
 | F4 | Tạm dừng Esc/P: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu | Đạt: logic (P16) + chơi tay (menu đủ 4 nút, đồng hồ đứng yên) |
-| F5 | Cài đặt âm lượng, độ nhạy chuột, lưu localStorage | Màn cài đặt có 2 thanh trượt: đạt (chơi tay). Giữ giá trị sau khi tải lại trang: **chưa kiểm** |
+| F5 | Cài đặt âm lượng, độ nhạy chuột, lưu localStorage | Màn cài đặt: đạt (chơi tay). Lưu và tải lại: đạt bằng unit test `tests/settings.test.ts` (localStorage giả lập); chưa thử tải lại trang bằng tay |
 | F6 | Nhạc nền + 12 hiệu ứng (WebAudio tổng hợp) | Đạt: người chơi thử đã nghe nhạc và hiệu ứng, xác nhận ổn |
-| F7 | HUD đầy đủ | Đạt (ảnh headless + chơi tay: mũi tên, hồi chiêu, thời gian bùa, báo gió). Đồng hồ đỏ nhấp nháy ≤ 30 s: **chưa chụp** |
+| F7 | HUD đầy đủ | Đạt (ảnh headless + chơi tay: mũi tên, hồi chiêu, thời gian bùa, báo gió; đồng hồ đỏ khi còn 25 s, ảnh dựng bằng scenario) |
 | F8 | Bảng màu chuẩn, ánh sáng môi trường = 0.15 + 0.55 × tỉ lệ | Các mã hex lấy từ `src/render/palette.ts`; công thức ở `ambientFor()` |
 
 ### Chơi tay trên trình duyệt (`npm run dev`)
@@ -82,6 +82,21 @@ Thời gian đã tính cả khởi động node + tsx. Test CLI cũng tự kiể
 | ![](screenshots/play-night3-wind.png) | Đêm 3: cơn gió (lá bay, chữ "Gió mạnh"), "Bùa Gió 2s", tầng 1 và tầng 2 phía sau |
 
 Sửa sau khi chơi tay: đèn đã sáng trông gần trắng (lớp phát sáng màu lõi #FFE9B0 quá mạnh), nên đổi lớp phát sáng sang #FFB347 với cường độ 0.75.
+
+### Ảnh dựng bằng scenario (không phải chơi tay)
+
+Những màn khó đạt khi chơi tay được dựng bằng **scenario theo contract** truyền qua URL, rồi chụp màn hình game thật bằng Chrome headless:
+`http://localhost:4179/?night=N&scenario=<JSON>&instant`. `&instant` bỏ 1,5 s chờ trước màn kết quả, vì Chrome headless chỉ chạy vài khung hình.
+
+| Ảnh | Scenario | Cho thấy |
+|---|---|---|
+| ![](screenshots/scenario-result-won.png) | Đêm 1, 5 đèn đã sáng sẵn | F3: "Đêm 1 đã sáng!", điểm 748 = floor(299.98)×2 + 3×50 (đèn đặt sẵn không được cộng điểm), nút "Đêm tiếp theo" |
+| ![](screenshots/scenario-result-lost.png) | Đêm 1, `flames: 0` | F3: "Ánh sáng đã tắt...", nút "Chơi lại Đêm" |
+| ![](screenshots/scenario-dawn.png) | Đêm 3, 7 đèn đã sáng sẵn | F3: màn Bình Minh, tổng điểm 868 = 359×2 + 150 |
+| ![](screenshots/scenario-drifter.png) | Đêm 2, Gió Lạc D1 ở (0, 0, 5), Mây mang 4 | F1: dải lụa xám xanh (#8FA3B8), đang `idle` vì Mây mang < 5 |
+| ![](screenshots/scenario-timer-30s.png) | Đêm 1, `time_left_s: 25` | F7: đồng hồ đỏ #FF5A5F khi ≤ 30 s |
+
+Sau ảnh đầu tiên, dải lụa Gió Lạc được phóng to (0.5 → 1.1 m) cho dễ thấy.
 
 ## Hồi quy Phase 1
 
