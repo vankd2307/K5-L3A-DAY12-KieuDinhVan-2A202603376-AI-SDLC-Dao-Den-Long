@@ -1,0 +1,9 @@
+{
+  "//": "Guard: src/core must compile WITHOUT DOM, Node or three types -> pure, headless-safe logic.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src/core"]
+}
