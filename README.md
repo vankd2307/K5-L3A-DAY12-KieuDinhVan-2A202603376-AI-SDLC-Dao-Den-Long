@@ -1,6 +1,6 @@
 # Đảo Đèn Lồng
 
-> **Video demo:** [demo.mp4](https://github.com/vankd2307/K5-L3A-DAY12-KieuDinhVan-2A202603376-AI-SDLC-Dao-Den-Long/releases/download/v1.0.0/demo.mp4) · Bản chạy được: [Release v1.0.0](https://github.com/vankd2307/K5-L3A-DAY12-KieuDinhVan-2A202603376-AI-SDLC-Dao-Den-Long/releases/tag/v1.0.0)
+> **Video demo:** [demo (mp4)](https://github.com/vankd2307/K5-L3A-DAY12-KieuDinhVan-2A202603376-AI-SDLC-Dao-Den-Long/releases/download/v1.0.0/2026-11-20.22-46-35.mp4) · Bản chạy được: [Release v1.0.0](https://github.com/vankd2307/K5-L3A-DAY12-KieuDinhVan-2A202603376-AI-SDLC-Dao-Den-Long/releases/tag/v1.0.0)
 
 Game 3D góc nhìn thứ ba (TypeScript + Three.js + Vite). Mây, người giữ đèn nhỏ tuổi, đi qua 3 đêm trên 3 hòn đảo. Cô gom đom đóm để thắp và giữ các Đèn Lồng Lớn cháy tới bình minh, né Bóng Mực trong sương đen.
 
