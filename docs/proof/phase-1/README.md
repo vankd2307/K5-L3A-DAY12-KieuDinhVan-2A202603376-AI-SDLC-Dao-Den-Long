@@ -19,7 +19,7 @@ Máy chạy: Windows 11, Node 22.21.0. Mọi kết quả dưới đây chạy l�
 | 11 | Tất định: cùng seed và inputs → cùng output | test + `cmp` hai file 20000 tick | Đạt (giống hệt từng byte) |
 | 12 | Sai định dạng → exit 2 + stderr | `tests/cli.test.ts`, chạy qua đúng `headless_cmd` | Đạt |
 | 13 | Chơi được Đêm 1 từ đầu tới thắng/thua | bot tự chơi + chạy lại qua CLI (bên dưới) | Đạt (headless) |
-| 14 | Bản 3D: nhân vật, camera, HUD, đèn sáng dần, chơi lại | chơi tay trên trình duyệt | **Chưa có ảnh**: chờ chụp màn hình |
+| 14 | Bản 3D: nhân vật, camera, HUD, đèn sáng dần, thắng/thua, chơi lại | chơi tay trên trình duyệt (Chrome), ảnh bên dưới | Đạt |
 
 ## Test tự động
 
@@ -57,5 +57,15 @@ Kết quả chạy lại bằng CLI khớp đúng với kết quả bot báo. Re
 
 **Tốc độ.** 18000 tick (cả đêm 5 phút) chạy hết 326 ms, tính cả thời gian khởi động node + tsx.
 
-## Chưa đạt / chưa kiểm
-- Bản 3D trên trình duyệt chưa có ảnh chụp: build thành công nhưng chưa chơi tay để xác nhận bằng mắt.
+## Chơi tay trên trình duyệt (`npm run dev`)
+
+| Ảnh | Cho thấy |
+|---|---|
+| ![](screenshots/1-playing-hud.png) | HUD (lửa 3, đom đóm 2/10, đèn 0/5, thời gian, điểm). Mây đội nón lá có treo đèn, camera góc nhìn thứ ba, 2 Bóng Mực tím đen đang đuổi, một đèn chưa thắp |
+| ![](screenshots/2-lantern-lit.png) | Vừa thắp đèn đầu tiên: đèn sáng vàng, HUD báo "Đèn đã thắp 1/5", điểm 150 (5×10 + 100) |
+| ![](screenshots/3-won.png) | Thắng: 5/5 đèn, "Đảo đã sáng trở lại!", nền trời ấm lên, gợi ý bấm R để chơi lại |
+| ![](screenshots/4-lost.png) | Thua: hết lửa ("···"), "Ánh sáng đã tắt...", gợi ý bấm R để chơi lại |
+
+## Chưa đạt / cần cải thiện
+- Đèn đã thắp hơi ngả vàng nhạt chứ chưa thật "vàng cam ấm"; chỉ là chỉnh màu, không ảnh hưởng luật.
+- Thua khá nhanh nếu đứng yên (khoảng 12 s): 2 Bóng Mực đuổi ngay từ đầu. Đây là cân bằng độ khó, sẽ xem lại nếu ticket sau yêu cầu.
