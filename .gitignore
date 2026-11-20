@@ -1,0 +1,5 @@
+﻿docs/lab/
+node_modules/
+dist/
+.env
+CLAUDE.md
