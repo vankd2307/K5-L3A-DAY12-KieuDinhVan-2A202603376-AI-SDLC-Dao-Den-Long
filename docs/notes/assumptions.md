@@ -1,8 +1,25 @@
 # Giả định
 
+## Phase 4 (v1.0.0, Test Contract v1.3)
+
+Quyết định thiết kế: [ADR 0002](../adr/0002-bench-soak-leaderboard.md). Những chỗ đề chưa nói rõ và cách tôi chọn:
+1. **Cảnh bench, "Bóng Mực vẫn di chuyển theo luật `wander`"**: Mây đứng yên ở (0,0,0). Nếu giữ luật thường thì những con trong vòng 12 m sẽ chuyển sang `chase`. Tôi cho Bóng Mực bỏ qua Mây trong cảnh bench, để cả 200 con luôn `wander` đúng như đề. `wander` theo luật Ticket-03 nghĩa là đi về đèn tắt gần nhất (L4, L5), vì không có đèn nào yếu (dầu luôn 100).
+2. **"Rải đều trên đảo"**: phân bố đều theo diện tích trong bán kính 39 m (đảo 40 m), dùng RNG seed 42. Bóng Mực không đặt trong vùng an toàn 6 m của L1–L3 (đặt vào thì luật cũng đẩy ra ngay). Đom đóm có thể nằm bất kỳ đâu.
+3. **"Hiệu ứng sáng tạo phải tắt trong bench"**: rung camera và lá bay không bao giờ chạy trong bench (không ai bị đánh, Đêm 1 không có gió). Cây, mây, sao vẫn giữ vì đó là cảnh nền "như lúc chơi thật". Gộp lại chỉ còn 3 draw call nên gần như không ảnh hưởng số đo. HUD vẫn hiện như lúc chơi.
+4. **Đồng hồ trong bench** vẫn đếm ngược trên HUD nhưng không kết thúc Đêm (đề tắt điều kiện kết thúc).
+5. **`load_ms`** tính từ lúc tiến trình `node scripts/bench.ts` khởi động. Không tính bước `vite build` chạy trước đó trong `npm run bench`, vì build không phải là "tải game".
+6. **`peak_mem_mb`** = tổng RSS cả cây tiến trình Chrome mà bench mở, không chỉ tiến trình renderer. Đây là bộ nhớ thật mà game chiếm trên máy.
+7. **Soak "Đêm thứ i dùng seed 7 + i"**: i đếm từ 1, nên Đêm đầu dùng seed 8 và Đêm cuối seed 17. "Input ngẫu nhiên theo seed" dùng một RNG riêng (seed của Đêm `xor` 0x5EED5EED), không lấy từ RNG của `Game`, để không làm lệch luật. Hướng di chuyển là một vector đơn vị có góc ngẫu nhiên; camera giữ yaw 0. Mỗi nút được bấm (true) đúng tick trúng xác suất, còn lại thả ra.
+8. **"Hết thời lượng chuẩn"**: chạy tối đa `durationS × 60` tick mỗi Đêm. Đêm luôn kết thúc ở tick cuối, nên kết quả chỉ là `won` hoặc `lost`.
+9. **Bảng xếp hạng, `score`**: tổng điểm các Đêm đã thắng trong một lượt chơi (bấm Bắt đầu = lượt mới). Thua rồi chơi lại thì vẫn cùng lượt. `seed` là seed của lượt; seed từng Đêm suy ra từ đó (`seed + 1000 × Đêm + số lần thử`).
+10. **Tên tiếng Việt (điểm cộng)**: chấp nhận mọi chữ cái hệ Latin (gồm đủ dấu tiếng Việt) sau khi chuẩn hóa NFC. Độ dài 3–12 tính theo ký tự, nên "Mây" là 3. Không nhận khoảng trắng hay ký tự hệ chữ khác.
+11. **Một người lưu nhiều lần**: mỗi lần lưu là một mục riêng. Một màn kết quả chỉ cho lưu một lần. Hai mục trùng hoàn toàn (tên, điểm, thời điểm tới từng giây) được coi là một khi gộp `localStorage` với file.
+12. **Đổi phím**: mỗi hành động một phím. Phím đang dùng cho hành động khác thì **bị từ chối** (không tự đổi chỗ) và báo tên hành động đó. Esc dùng để hủy khi đang chờ nhấn phím, trừ khi đang gán cho chính Tạm dừng.
+13. **Giảm chuyển động** tắt rung camera, lớp chớp tím khi trúng đòn, nhấp nháy đồng hồ ≤ 30 s và nhấp nháy của Mây khi bất tử. Thanh dầu nhấp nháy 1 Hz của đèn yếu **vẫn giữ**, vì Ticket-03 bắt buộc và phụ đề cũng báo việc đó.
+
 ## Phase 3 (Ticket-03 "Đèn cạn dầu", Test Contract v1.2)
 
-Quyết định thiết kế chính: [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md). Thay đổi phá vỡ tương thích: [CHANGELOG](../CHANGELOG.md).
+Quyết định thiết kế chính: [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md). Thay đổi phá vỡ tương thích: [CHANGELOG](../../CHANGELOG.md).
 
 Ticket-03 **thay** giả định Phase 2 mục 2 (`wander` lượn ngẫu nhiên). Những chỗ ticket chưa quy định và cách tôi chọn:
 1. **`wander` khi không có đèn yếu** đi về đèn tắt gần nhất tới khi cách 3 m, rồi lượn ngẫu nhiên quanh đó. Khi không có đèn tắt nào thì lượn ngẫu nhiên như trước. Phát hiện Mây ở 12 m vẫn ưu tiên chuyển sang `chase`.

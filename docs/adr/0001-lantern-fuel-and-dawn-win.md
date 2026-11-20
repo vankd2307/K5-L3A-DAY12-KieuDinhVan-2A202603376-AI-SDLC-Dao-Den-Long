@@ -35,6 +35,6 @@ Bỏ thắng sớm. `checkEnd()` cuối tick: hết Ngọn Lửa → thua `no_fl
 `capacity = min(20, 10 + 2 × successfulLights)`, tính từ một bộ đếm trong `Player`. Thắp lại cũng tính; đèn đặt sẵn bằng scenario thì không.
 
 ## Hệ quả
-- Mọi test về điểm, luật thắng và vùng an toàn của Phase 2 phải sửa (xem [CHANGELOG](../CHANGELOG.md) và mục "Hồi quy" trong bằng chứng Phase 3).
+- Mọi test về điểm, luật thắng và vùng an toàn của Phase 2 phải sửa (xem [CHANGELOG](../../CHANGELOG.md) và mục "Hồi quy" trong bằng chứng Phase 3).
 - Bot tự chơi phải đổi mục tiêu: giữ đèn sáng và sống sót, thay vì thắp hết.
 - Giả định Phase 2 mục 2 ("`wander` lượn ngẫu nhiên") bị Ticket-03 làm rõ: `wander` đi về đèn yếu, không có thì về đèn tắt gần nhất.

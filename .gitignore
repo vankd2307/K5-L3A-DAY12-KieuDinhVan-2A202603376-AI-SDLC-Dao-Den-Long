@@ -4,3 +4,6 @@ dist/
 .env
 
 docs/requirements/*.pdf
+
+# release artifacts (uploaded to GitHub Release, not committed)
+release/

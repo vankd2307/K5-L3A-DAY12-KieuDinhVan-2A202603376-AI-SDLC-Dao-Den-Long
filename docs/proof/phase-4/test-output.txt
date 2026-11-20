@@ -1,0 +1,106 @@
+ ✓ tests/settings.test.ts > F5 settings persistence > defaults when nothing is saved 5ms
+ ✓ tests/settings.test.ts > F5 settings persistence > saved volume and sensitivity are loaded again (survive a reload) 1ms
+ ✓ tests/settings.test.ts > F5 settings persistence > corrupt or out-of-range values fall back safely 0ms
+ ✓ tests/contract.test.ts > game.contract.json (v1.3) > declares contract 1.3 and the commands 3ms
+ ✓ tests/contract.test.ts > game.contract.json (v1.3) > tuning mirrors the numbers the game uses 1ms
+ ✓ tests/contract.test.ts > game.contract.json (v1.3) > tuning equals the Ticket-02 + Ticket-03 standard tables 1ms
+ ✓ tests/contract.test.ts > tick model and output > tick 0 snapshot is before input; night_start at tick 0; --ticks N runs N steps 4ms
+ ✓ tests/contract.test.ts > tick model and output > snapshot has every v1.1 field 2ms
+ ✓ tests/contract.test.ts > tick model and output > maps match the standard lantern tables 1ms
+ ✓ tests/contract.test.ts > tick model and output > end is always the last line 1ms
+ ✓ tests/contract.test.ts > architecture > src/core imports nothing from three, node or render 5ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > a fresh light starts at fuel 100 and decays 1/s 28ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > goes out at fuel 0: lantern_out, deposited 0, ever_lit kept, fuel 0 4ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > refuel: used = min(carried, ceil((100 - fuel)/10)), fuel += 10 x used (max 100), +5 per mote 1ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > a full lantern is not selectable: no event, the next acceptable lantern is chosen instead 1ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > relight costs 5 and scores +40; first light +100 3ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > scenario lit:true without fuel defaults to 100 and does not count as a successful light 1ms
+ ✓ tests/fuel.test.ts > F-FUEL fuel, burn-out, refuel, relight > fuel stays exact over a long run (integer 1/60 units) 50ms
+ ✓ tests/fuel.test.ts > F-CAP capacity grows with successful lights > 10 + 2 per light, max 20; relights count 2ms
+ ✓ tests/fuel.test.ts > F-CAP capacity grows with successful lights > picks up to the new capacity 3ms
+ ✓ tests/fuel.test.ts > F-SAFE safe zone needs fuel >= 30 > fuel exactly 30 keeps the zone; below 30 loses it 5ms
+ ✓ tests/rules.test.ts > P2 movement and jump > runs 6 m/s along +Z at yaw 0 (vel reported) 7ms
+ ✓ tests/rules.test.ts > P2 movement and jump > rotates by cam_yaw_deg and normalises long vectors 1ms
+ ✓ tests/rules.test.ts > P2 movement and jump > jumps at 7 m/s with g=20 (apex ~1.225 m), only from the ground 8ms
+ ✓ tests/rules.test.ts > P3 dash > 14 m/s for 12 ticks in the facing direction when standing still, cooldown 90 ticks from start 6ms
+ ✓ tests/rules.test.ts > P3 dash > dash in the air keeps altitude 2ms
+ ✓ tests/rules.test.ts > P4 motes > starts with 20 random motes at 20 distinct spawn points; +1 at tick 240 39ms
+ ✓ tests/rules.test.ts > P4 motes > picks within XZ 1.0 and height 1.5, up to capacity 10 4ms
+ ✓ tests/rules.test.ts > P4 motes > mote pickup gives no score (score is per deposited mote) 1ms
+ ✓ tests/rules.test.ts > P5 lanterns > deposits min(carried, missing) several times; lights at 10; +5/mote, +100/lantern 6ms
+ ✓ tests/rules.test.ts > P5 lanterns > interact radius is 2.0; ties go to the smaller id 7ms
+ ✓ tests/rules.test.ts > P6 safe zone > an unlit lantern does not protect; a lit lantern keeps shades at 6 m 60ms
+ ✓ tests/fuel.test.ts > F-DRAIN shades drain weak lanterns > a wandering shade walks to the weak lantern, drains 5/s (+1/s decay), fuel_drain every 60 ticks 24ms
+ ✓ tests/fuel.test.ts > F-DRAIN shades drain weak lanterns > two drainers stack (10/s + 1/s) 4ms
+ ✓ tests/fuel.test.ts > F-DRAIN shades drain weak lanterns > drain -> chase when Mây comes within 6 m 1ms
+ ✓ tests/fuel.test.ts > F-DRAIN shades drain weak lanterns > drain -> wander when the lantern goes out 3ms
+ ✓ tests/fuel.test.ts > F-DRAIN shades drain weak lanterns > refuelling to >= 30 sends drainers back to wander and pushes them to the 6 m edge in 30 ticks, harmless 2ms
+ ✓ tests/fuel.test.ts > F-DRAIN shades drain weak lanterns > pulse on a draining shade scores 15 (5 otherwise) 2ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > lighting every lantern no longer ends the night 1ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > alive at dawn with >= ceil(0.6 x 5) = 3 lit wins dawn_survived; score = per lit (50 + floor fuel) + 50/flame 1ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > 2 of 5 lit at dawn loses (dawn) 1ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > thresholds: Night 2 needs 4/6, Night 3 needs 5/7 7ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > a lantern burning out on the dawn tick does not count 1ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > losing the last flame on the dawn tick loses no_flames 1ms
+ ✓ tests/fuel.test.ts > F-WIN dawn rules > Night durations are 240 / 270 / 300 s 1ms
+ ✓ tests/rules.test.ts > P6 safe zone > a shade inside when the lantern lights is pushed to the edge within 30 ticks, harmless meanwhile 2ms
+ ✓ tests/rules.test.ts > P7 pulse > costs 3, 3D radius 5 from feet+0.8, stun 120, push 4 m over 15 ticks, +5 each, cooldown 180 12ms
+ ✓ tests/rules.test.ts > P7 pulse > re-pulsing a stunned shade refreshes the stun and still scores 3ms
+ ✓ tests/rules.test.ts > P7 pulse > does nothing with fewer than 3 motes 1ms
+ ✓ tests/rules.test.ts > P8 shades > spawn 2 at tick 300 then 1 every 480 ticks on Night 1, starting in `spawning` 37ms
+ ✓ tests/rules.test.ts > P8 shades > detects at 12 m (wander -> chase) 1ms
+ ✓ tests/rules.test.ts > P8 shades > chases at 4 m/s on Night 1 and 4.5 m/s on Night 3 2ms
+ ✓ tests/rules.test.ts > P9 getting hit > -1 flame, drops floor(n/2) dropped motes in a 1.5-2.5 m ring (ttl 8 s), invuln 90, shade recoils 6ms
+ ✓ tests/rules.test.ts > P9 getting hit > at most one flame per tick even with two shades touching 1ms
+ ✓ tests/rules.test.ts > P9 getting hit > dropped motes expire after 480 ticks 1ms
+ ✓ tests/rules.test.ts > P10 falling off > -1 flame, loses all motes, waits 60 ticks, respawns at start with 90 ticks invuln 7ms
+ ✓ tests/rules.test.ts > P10 falling off > falling with the last flame loses immediately 3ms
+ ✓ tests/rules.test.ts > P11 dawn (still valid after Ticket-03) > dawn with no lit lanterns loses 1ms
+ ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 2: the bridge holds, beside it you fall 4ms
+ ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 2: launch pad throws Mây to the other island in ~1.4 s 4ms
+ ✓ tests/rules.test.ts > P12 Night 2 and 3 maps > Night 3: tier walls block, ramps climb, pad reaches tier 2, the tower blocks 9ms
+ ✓ tests/rules.test.ts > P13 drifters > idle -> chase (carry >= 5, <= 15 m) -> steal min(3, n) -> flee 240 ticks -> removed 14ms
+ ✓ tests/rules.test.ts > P13 drifters > stays idle when Mây carries fewer than 5 1ms
+ ✓ tests/rules.test.ts > P13 drifters > pulse on a chasing drifter makes it flee empty-handed; on a fleeing thief it drops the loot 1ms
+ ✓ tests/rules.test.ts > P14 wind charm > pick-up gives 600 ticks of 7.2 m/s and cooldown-free dash; respawns after 2700 ticks 3ms
+ ✓ tests/rules.test.ts > P15 wind (Night 3) > a 300-tick gust every 1800 ticks pushes the player 2 m/s 70ms
+ ✓ tests/rules.test.ts > P16 pause > tick advances, sim_tick and time freeze, state paused, paused/resumed events 3ms
+ ✓ tests/rules.test.ts > P17 determinism > night 1: same seed -> identical output 87ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > writes JSONL ending with an end line and exits 0 511ms
+ ✓ tests/rules.test.ts > P17 determinism > night 2: same seed -> identical output 34ms
+ ✓ tests/rules.test.ts > P17 determinism > night 3: same seed -> identical output 107ms
+ ✓ tests/rules.test.ts > P17 determinism > drifters spawn at tick 1200 on Night 2 4ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > same args twice -> byte-identical output 773ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > accepts JSONL inputs (one frame per line) 321ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (broken JSON) -> exit 2 with stderr 312ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (non-increasing ticks) -> exit 2 with stderr 323ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (bad move) -> exit 2 with stderr 302ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed inputs (bad button type) -> exit 2 with stderr 318ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > malformed scenario -> exit 2 321ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > --night 4 -> exit 2 304ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > --night 2 runs and reports the night 298ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > --night 3 runs and reports the night 317ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > a full Night 3 (21600 ticks) finishes in <= 30 s 963ms
+ ✓ tests/cli.test.ts > headless CLI (contract B) > missing file -> non-zero exit 332ms
+ ✓ tests/phase4.test.ts > P4-BENCH scene (§1) > exactly 200 wandering shades, 100 motes, L1–L3 lit with fuel 100, Night 1 4ms
+ ✓ tests/phase4.test.ts > P4-BENCH scene (§1) > spread over the whole island (every quadrant), all on land, seeded 10ms
+ ✓ tests/phase4.test.ts > P4-BENCH scene (§1) > no spawns, damage, pickups, fuel decay or end; shades keep moving in wander 5317ms
+ ✓ tests/phase4.test.ts > P4-BENCH scene (§1) > camera orbit: (30,15,0) at 0 s, counter-clockwise seen from above (x = r cos a, z = r sin a), 15 s per lap 1ms
+ ✓ tests/phase4.test.ts > P4-STATS bench formulas (§1) > avg, 1% low (k = max(1, ceil(0.01 N)) largest dt), p95 1ms
+ ✓ tests/phase4.test.ts > P4-STATS bench formulas (§1) > k rounds up: N = 150 -> k = 2 0ms
+ ✓ tests/phase4.test.ts > P4-STATS bench formulas (§1) > p95 picks the 95th percentile 0ms
+ ✓ tests/phase4.test.ts > P4-SOAK (§2) > nights rotate 1 → 2 → 3 → 1 0ms
+ ✓ tests/phase4.test.ts > P4-SOAK (§2) > random inputs: direction changes only every 30 ticks; button rates ≈ 5/3/2/10 % 19ms
+ ✓ tests/phase4.test.ts > P4-SOAK (§2) > a soak night ends (or reaches its full length) and is deterministic 78ms
+ ✓ tests/phase4.test.ts > P4-SOAK (§2) > soak_cmd writes soak.json with 0 crashes and bounded memory 553ms
+ ✓ tests/phase4.test.ts > P4-HEADLESS unchanged by Phase 4 > replaying the Phase 3 bot inputs reproduces the committed Phase 3 output byte for byte 264ms
+ ✓ tests/phase4.test.ts > P4-BOARD leaderboard (§3) > names: 3–12 of [A-Za-z0-9_]; Vietnamese with diacritics accepted (bonus) 1ms
+ ✓ tests/phase4.test.ts > P4-BOARD leaderboard (§3) > score desc; equal score → earlier achieved_at first; top 10 only 1ms
+ ✓ tests/phase4.test.ts > P4-BOARD leaderboard (§3) > entries have name, score, nights_won 0–3, ISO 8601 achieved_at with time zone, seed; corrupt rows dropped 1ms
+ ✓ tests/phase4.test.ts > P4-BOARD leaderboard (§3) > export is {"entries": [...]} in rank order; merge removes duplicates 0ms
+ ✓ tests/phase4.test.ts > P4-BOARD leaderboard (§3) > --export-leaderboard writes the file store, ranked (survives restart: it is a file on disk) 801ms
+ ✓ tests/phase4.test.ts > P4-ACCESS (§4) > every action is rebindable, defaults have no duplicates 2ms
+ ✓ tests/phase4.test.ts > P4-ACCESS (§4) > a duplicate key is refused and the clashing action is reported 1ms
+ ✓ tests/phase4.test.ts > P4-ACCESS (§4) > UI text is at least 18 px at 1280×720 (all CSS font sizes ≥ 18px / 1rem, root 18px, large ×1.25) 3ms
+ Test Files  6 passed (6)
+      Tests  104 passed (104)

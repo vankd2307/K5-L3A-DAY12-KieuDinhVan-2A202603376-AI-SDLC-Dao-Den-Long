@@ -6,12 +6,12 @@ import { QUIET, run } from './helpers';
 
 const root = join(__dirname, '..');
 
-describe('game.contract.json (v1.2)', () => {
+describe('game.contract.json (v1.3)', () => {
   const c = JSON.parse(readFileSync(join(root, 'game.contract.json'), 'utf8'));
-  // Ticket-03: contract bumped 1.1 -> 1.2
-  it('declares contract 1.2 and the commands', () => {
-    expect(c.contract_version).toBe('1.2');
-    for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd']) expect(typeof c[k]).toBe('string');
+  // Ticket-03: contract 1.1 -> 1.2; Phase 4: 1.2 -> 1.3 and adds bench_cmd + soak_cmd
+  it('declares contract 1.3 and the commands', () => {
+    expect(c.contract_version).toBe('1.3');
+    for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd', 'bench_cmd', 'soak_cmd']) expect(typeof c[k]).toBe('string');
   });
   it('tuning mirrors the numbers the game uses', () => {
     expect(c.tuning).toEqual(TUNING);

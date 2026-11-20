@@ -1,14 +1,74 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Game, TimedEvent } from '../core';
 import { ambientFor, C } from './palette';
 
-type StdMesh = THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+type StdMesh = THREE.Mesh<THREE.BufferGeometry, THREE.MeshLambertMaterial>;
 
 interface LanternObj { group: THREE.Group; lamp: StdMesh; light: THREE.PointLight; glow: number; bar: THREE.Group; fill: THREE.Mesh; tear: THREE.Mesh }
-interface ShadeObj { group: THREE.Group; body: StdMesh; age: number }
 interface DrifterObj { group: THREE.Group; strips: THREE.Mesh[] }
 
-const std = (color: number, extra: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({ color, ...extra });
+/**
+ * One InstancedMesh per part, so 200 shades or 100 motes cost a handful of draw calls (Phase 4 bench).
+ * `local` places the part inside its owner (shade / mote) frame.
+ */
+class Parts {
+  readonly meshes: THREE.InstancedMesh[] = [];
+  private n = 0;
+  private cap = 0;
+  private tmp = new THREE.Matrix4();
+  constructor(
+    private parent: THREE.Object3D,
+    private parts: Array<{ geo: THREE.BufferGeometry; mat: THREE.Material; local: THREE.Matrix4 }>,
+  ) {
+    this.grow(64);
+  }
+  private grow(cap: number): void {
+    for (const m of this.meshes) [this.parent.remove(m), m.dispose()];
+    this.meshes.length = 0;
+    this.cap = cap;
+    for (const p of this.parts) {
+      const m = new THREE.InstancedMesh(p.geo, p.mat, cap);
+      m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      m.frustumCulled = false; // instances span the island
+      m.count = 0;
+      this.meshes.push(m);
+      this.parent.add(m);
+    }
+  }
+  begin(): void {
+    this.n = 0;
+  }
+  /** Adds one owner instance with world matrix `m`; returns its index. */
+  push(m: THREE.Matrix4): number {
+    if (this.n >= this.cap) this.grow(this.cap * 2);
+    this.parts.forEach((p, i) => this.meshes[i]!.setMatrixAt(this.n, this.tmp.multiplyMatrices(m, p.local)));
+    return this.n++;
+  }
+  color(part: number, index: number, c: THREE.Color): void {
+    this.meshes[part]!.setColorAt(index, c);
+  }
+  end(): void {
+    for (const m of this.meshes) {
+      m.count = this.n;
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
+  }
+}
+
+// Lambert, not PBR: same look at roughness 1 / metalness 0, far cheaper per pixel under 6 point lights (Phase 4 bench)
+/** Bakes many copies of static decoration into ONE mesh: one draw call instead of one per copy (Phase 4 bench). */
+function merged(parts: Array<{ geo: THREE.BufferGeometry; m: THREE.Matrix4 }>, mat: THREE.Material): THREE.Mesh | null {
+  if (!parts.length) return null;
+  const geo = mergeGeometries(parts.map((p) => p.geo.clone().applyMatrix4(p.m)));
+  parts.forEach((p) => p.geo.dispose());
+  return geo ? new THREE.Mesh(geo, mat) : null;
+}
+const trs = (x: number, y: number, z: number, s = 1, sy = s) =>
+  new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(s, sy, s));
+
+const std = (color: number, extra: THREE.MeshLambertMaterialParameters = {}) => new THREE.MeshLambertMaterial({ color, ...extra });
 
 /**
  * Read-only 3D view of a Game. Never mutates game state; Math.random here is cosmetic only.
@@ -18,6 +78,11 @@ export class SceneView {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.PerspectiveCamera(60, 1, 0.1, 500);
   camYawDeg = 0;
+  /** Bench: camera at this point looking at (0,0,0) instead of following Mây. */
+  fixedCamera: readonly number[] | null = null;
+  /** Accessibility "Giảm chuyển động": no camera shake. */
+  reducedMotion = false;
+  private shake = 0;
 
   private ambient = new THREE.AmbientLight(0xffffff, 0.15);
   private moon = new THREE.DirectionalLight(0xb8c4ff, 0.35);
@@ -26,10 +91,14 @@ export class SceneView {
   private player = new THREE.Group();
   private playerLight = new THREE.PointLight(C.lit, 6, 9, 1.6);
   private lanterns: LanternObj[] = [];
-  private shades = new Map<string, ShadeObj>();
+  private shadeParts!: Parts;
+  private shadeAge = new Map<string, number>();
+  private moteParts!: Parts;
+  private dummy = new THREE.Object3D();
+  private stunColor = new THREE.Color(C.shadeStun);
+  private bodyColor = new THREE.Color(C.shadeBody);
   private drifters = new Map<string, DrifterObj>();
   private charms: THREE.Group[] = [];
-  private motePool: THREE.Group[] = [];
   private pulseRing: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>;
   private pulseT = 1;
   private leaves: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
@@ -76,9 +145,9 @@ export class SceneView {
   load(game: Game): void {
     this.world.clear();
     this.dynamic.clear();
-    this.shades.clear();
+    this.shadeAge.clear();
+    this.buildInstanced();
     this.drifters.clear();
-    this.motePool = [];
     this.buildTerrain(game);
     this.lanterns = game.lanterns.map((l) => this.makeLantern(l.pos));
     this.charms = game.charms.map((c) => this.makeCharm(c.pos));
@@ -86,7 +155,10 @@ export class SceneView {
   }
 
   onEvents(events: TimedEvent[]): void {
-    for (const e of events) if (e.name === 'pulse') this.pulseT = 0;
+    for (const e of events) {
+      if (e.name === 'pulse') this.pulseT = 0;
+      if (e.name === 'player_hit') this.shake = 0.35;
+    }
   }
 
   /** Project a world point; returns NDC x,y and whether it is in front of the camera. */
@@ -105,7 +177,7 @@ export class SceneView {
     this.player.position.set(pp[0], pp[1], pp[2]);
     if (Math.hypot(p.facing[0], p.facing[1]) > 0) this.heading = Math.atan2(p.facing[0], p.facing[1]);
     this.player.rotation.y = this.heading;
-    this.player.visible = p.respawnTicks === 0 && !(p.invulnTicks > 0 && Math.floor(time * 12) % 2 === 0);
+    this.player.visible = p.respawnTicks === 0 && !(p.invulnTicks > 0 && !this.reducedMotion && Math.floor(time * 12) % 2 === 0);
     this.playerLight.intensity = 3 + p.carried * 0.6;
 
     // lanterns + ambient (0.15 + 0.55 * lit/total)
@@ -136,36 +208,39 @@ export class SceneView {
     });
     this.ambient.intensity = ambientFor(lit, game.lanterns.length);
 
-    // motes (pooled): core + halo
-    while (this.motePool.length < game.motes.length) this.motePool.push(this.makeMote());
-    this.motePool.forEach((m, i) => {
-      const mo = game.motes[i];
-      m.visible = !!mo;
-      if (mo) {
-        m.position.set(mo.pos[0], mo.pos[1] + 0.9 + Math.sin(time * 2 + i * 1.7) * 0.25, mo.pos[2]);
-        const blink = mo.kind === 'dropped' && mo.ttl < 120 && Math.floor(time * 8) % 2 === 0;
-        m.visible = !blink;
-      }
+    // motes (instanced): core + halo
+    const d = this.dummy;
+    this.moteParts.begin();
+    game.motes.forEach((mo, i) => {
+      const blink = mo.kind === 'dropped' && mo.ttl < 120 && Math.floor(time * 8) % 2 === 0;
+      if (blink) return;
+      d.position.set(mo.pos[0], mo.pos[1] + 0.9 + Math.sin(time * 2 + i * 1.7) * 0.25, mo.pos[2]);
+      d.rotation.set(0, 0, 0);
+      d.scale.setScalar(1);
+      d.updateMatrix();
+      this.moteParts.push(d.matrix);
     });
+    this.moteParts.end();
 
-    // shades
+    // shades (instanced): body, rim, eyes
     const alive = new Set<string>();
-    for (const s of game.shades) {
-      alive.add(s.id);
-      let o = this.shades.get(s.id);
-      if (!o) {
-        o = this.makeShade();
-        this.shades.set(s.id, o);
-      }
-      o.age += dt;
-      const stunned = s.state === 'stunned';
-      o.body.material.color.setHex(stunned ? C.shadeStun : C.shadeBody);
-      o.group.position.set(s.pos[0], s.pos[1] + Math.sin(time * 3 + s.pos[0]) * 0.15, s.pos[2]);
-      o.group.lookAt(pp[0], s.pos[1], pp[2]);
-      const grow = s.state === 'spawning' ? Math.min(1, o.age) : 1;
-      o.group.scale.setScalar(grow * (stunned ? 0.85 : 1 + Math.sin(time * 6) * 0.04));
+    this.shadeParts.begin();
+    for (const sh of game.shades) {
+      alive.add(sh.id);
+      const age = (this.shadeAge.get(sh.id) ?? 0) + dt;
+      this.shadeAge.set(sh.id, age);
+      const stunned = sh.state === 'stunned';
+      d.position.set(sh.pos[0], sh.pos[1] + Math.sin(time * 3 + sh.pos[0]) * 0.15, sh.pos[2]);
+      d.rotation.set(0, 0, 0);
+      d.lookAt(pp[0], sh.pos[1], pp[2]);
+      const grow = sh.state === 'spawning' ? Math.min(1, age) : 1;
+      d.scale.setScalar(Math.max(0.01, grow * (stunned ? 0.85 : 1 + Math.sin(time * 6) * 0.04)));
+      d.updateMatrix();
+      const idx = this.shadeParts.push(d.matrix);
+      this.shadeParts.color(0, idx, stunned ? this.stunColor : this.bodyColor);
     }
-    for (const [id, o] of this.shades) if (!alive.has(id)) [this.dynamic.remove(o.group), this.shades.delete(id)];
+    this.shadeParts.end();
+    for (const id of this.shadeAge.keys()) if (!alive.has(id)) this.shadeAge.delete(id);
 
     // drifters: wavy silk ribbons
     for (const d of game.drifters) {
@@ -222,9 +297,22 @@ export class SceneView {
     } else this.pulseRing.material.opacity = 0;
 
     // camera behind the contract's forward (sin yaw, cos yaw)
-    const th = (this.camYawDeg * Math.PI) / 180;
-    this.camera.position.set(pp[0] - Math.sin(th) * 9, pp[1] + 5.5, pp[2] - Math.cos(th) * 9);
-    this.camera.lookAt(pp[0], pp[1] + 1.2, pp[2]);
+    if (this.fixedCamera) {
+      const c = this.fixedCamera;
+      this.camera.position.set(c[0]!, c[1]!, c[2]!);
+      this.camera.lookAt(0, 0, 0);
+    } else {
+      const th = (this.camYawDeg * Math.PI) / 180;
+      this.camera.position.set(pp[0] - Math.sin(th) * 9, pp[1] + 5.5, pp[2] - Math.cos(th) * 9);
+      this.camera.lookAt(pp[0], pp[1] + 1.2, pp[2]);
+      // short camera shake when hit (creative), off with reduced motion
+      this.shake = Math.max(0, this.shake - dt);
+      if (this.shake > 0 && !this.reducedMotion) {
+        const k = this.shake * 0.5;
+        this.camera.position.x += Math.sin(time * 90) * k;
+        this.camera.position.y += Math.cos(time * 77) * k;
+      }
+    }
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -243,15 +331,15 @@ export class SceneView {
     sea.rotation.x = -Math.PI / 2;
     sea.position.y = -12;
     this.scene.add(sea);
-    const cloud = std(C.fog, { flatShading: true });
+    const clouds: Array<{ geo: THREE.BufferGeometry; m: THREE.Matrix4 }> = [];
     for (let i = 0; i < 80; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = 60 + Math.random() * 80;
-      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(3 + Math.random() * 6, 0), cloud);
-      c.position.set(35 + Math.cos(a) * r, -9 - Math.random() * 3, Math.sin(a) * r);
-      c.scale.y = 0.45;
-      this.scene.add(c);
+      const geo = new THREE.IcosahedronGeometry(3 + Math.random() * 6, 0);
+      clouds.push({ geo, m: trs(35 + Math.cos(a) * r, -9 - Math.random() * 3, Math.sin(a) * r, 1, 0.45) });
     }
+    const cloudMesh = merged(clouds, std(C.fog, { flatShading: true }));
+    if (cloudMesh) this.scene.add(cloudMesh);
     const g = new THREE.BufferGeometry();
     const pts: number[] = [];
     for (let i = 0; i < 700; i++) {
@@ -272,24 +360,19 @@ export class SceneView {
   }
 
   private trees(n: number, inside: (x: number, z: number) => boolean, cx: number, rMax: number): void {
-    const trunk = std(C.wood);
-    const leaf = std(0x2a5244, { flatShading: true });
+    const trunks: Array<{ geo: THREE.BufferGeometry; m: THREE.Matrix4 }> = [];
+    const leaves: Array<{ geo: THREE.BufferGeometry; m: THREE.Matrix4 }> = [];
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = Math.random() * rMax;
       const x = cx + Math.cos(a) * r;
       const z = Math.sin(a) * r;
       if (!inside(x, z)) continue;
-      const t = new THREE.Group();
-      const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, 1.4, 6), trunk);
-      tr.position.y = 0.7;
-      const lf = new THREE.Mesh(new THREE.ConeGeometry(1, 2.4, 7), leaf);
-      lf.position.y = 2.4;
-      t.add(tr, lf);
-      t.position.set(x, 0, z);
-      t.scale.setScalar(0.7 + Math.random() * 0.7);
-      this.world.add(t);
+      const k = 0.7 + Math.random() * 0.7;
+      trunks.push({ geo: new THREE.CylinderGeometry(0.15, 0.25, 1.4, 6), m: trs(x, 0.7 * k, z, k) });
+      leaves.push({ geo: new THREE.ConeGeometry(1, 2.4, 7), m: trs(x, 2.4 * k, z, k) });
     }
+    for (const mesh of [merged(trunks, std(C.wood)), merged(leaves, std(0x2a5244, { flatShading: true }))]) if (mesh) this.world.add(mesh);
   }
 
   private buildTerrain(game: Game): void {
@@ -304,12 +387,10 @@ export class SceneView {
     } else if (map.night === 2) {
       this.disc(28, 0, 0);
       this.disc(28, 70, 0);
-      const plankMat = std(C.wood);
-      for (let x = 26; x < 44; x += 0.6) {
-        const plank = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 4), plankMat);
-        plank.position.set(x + 0.3, -0.07, 0);
-        this.world.add(plank);
-      }
+      const planks: Array<{ geo: THREE.BufferGeometry; m: THREE.Matrix4 }> = [];
+      for (let x = 26; x < 44; x += 0.6) planks.push({ geo: new THREE.BoxGeometry(0.5, 0.15, 4), m: trs(x + 0.3, -0.07, 0) });
+      const bridge = merged(planks, std(C.wood));
+      if (bridge) this.world.add(bridge);
       this.trees(30, (x, z) => map.ground(x, z) === 0 && clearOf(x, z) && Math.abs(z) > 3, 0, 26);
       this.trees(30, (x, z) => map.ground(x, z) === 0 && clearOf(x, z) && Math.abs(z) > 3, 70, 26);
     } else {
@@ -329,7 +410,7 @@ export class SceneView {
       tower.position.y = 10;
       const roof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 2.2, 20), std(0x7a2a2a));
       roof.position.y = 15.1;
-      const bell = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), std(C.gold, { metalness: 0.6, roughness: 0.3 }));
+      const bell = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: C.gold, metalness: 0.6, roughness: 0.3 }));
       bell.position.y = 13;
       this.world.add(t2, tower, roof, bell);
       // ramps at 30 and 150 degrees: r 30 (Y 0) -> r 24 (Y 3)
@@ -394,33 +475,27 @@ export class SceneView {
     return { lamp, light, group, glow: 0, bar, fill, tear };
   }
 
-  private makeMote(): THREE.Group {
-    const g = new THREE.Group();
-    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), new THREE.MeshBasicMaterial({ color: C.moteCore })));
-    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), new THREE.MeshBasicMaterial({ color: C.moteHalo, transparent: true, opacity: 0.3 })));
-    this.dynamic.add(g);
-    return g;
-  }
-
-  private makeShade(): ShadeObj {
-    const group = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12), std(C.shadeBody, { emissive: 0x1a0030 })) as StdMesh;
-    body.scale.y = 1.25;
-    const rim = new THREE.Mesh(new THREE.SphereGeometry(0.78, 16, 12), this.rimMat);
-    rim.scale.y = 1.25;
-    for (const sx of [-0.22, 0.22]) {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), this.eyeMat);
-      eye.position.set(sx, 0.2, 0.62);
-      group.add(eye);
-    }
-    group.add(body, rim);
-    this.dynamic.add(group);
-    return { group, body, age: 0 };
+  /** Instanced shades and motes, rebuilt per Night (they live in `dynamic`, which load() clears). */
+  private buildInstanced(): void {
+    const at = (x: number, y: number, z: number, sy = 1) => new THREE.Matrix4().compose(
+      new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(1, sy, 1));
+    const body = std(0xffffff, { emissive: 0x1a0030 }); // colour per instance (normal / stunned)
+    const eye = new THREE.SphereGeometry(0.09, 8, 6);
+    this.shadeParts = new Parts(this.dynamic, [
+      { geo: new THREE.SphereGeometry(0.7, 16, 12), mat: body, local: at(0, 0, 0, 1.25) },
+      { geo: new THREE.SphereGeometry(0.78, 16, 12), mat: this.rimMat, local: at(0, 0, 0, 1.25) },
+      { geo: eye, mat: this.eyeMat, local: at(-0.22, 0.2, 0.62) },
+      { geo: eye, mat: this.eyeMat, local: at(0.22, 0.2, 0.62) },
+    ]);
+    this.moteParts = new Parts(this.dynamic, [
+      { geo: new THREE.SphereGeometry(0.13, 8, 6), mat: new THREE.MeshBasicMaterial({ color: C.moteCore }), local: at(0, 0, 0) },
+      { geo: new THREE.SphereGeometry(0.3, 10, 8), mat: new THREE.MeshBasicMaterial({ color: C.moteHalo, transparent: true, opacity: 0.3 }), local: at(0, 0, 0) },
+    ]);
   }
 
   private makeDrifter(): DrifterObj {
     const group = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({ color: C.drifter, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: C.drifter, emissiveIntensity: 0.2 });
+    const mat = new THREE.MeshLambertMaterial({ color: C.drifter, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: C.drifter, emissiveIntensity: 0.2 });
     const strips = [0, 1, 2, 3, 4].map((i) => {
       const s = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.35), mat);
       s.position.z = -i * 0.7;

@@ -1,0 +1,14 @@
+{
+  "contract_version": "1.3",
+  "avg_fps": 135,
+  "p1_low_fps": 44.5,
+  "frame_ms_p95": 11.9,
+  "frames": 4051,
+  "load_ms": 1620,
+  "peak_mem_mb": 992,
+  "vsync_off": true,
+  "renderer": "Three.js r187 WebGL2 (35 draw calls, 199638 triangles per frame) / ANGLE (Intel, Intel(R) UHD Graphics (0x00009A68) Direct3D11 vs_5_0 ps_5_0, D3D11) / Chrome/157.0.0.0 (Chrome/157.0.8103.79, flags --disable-gpu-vsync --disable-frame-rate-limit, viewport 1280x720)",
+  "os": "Windows_NT 10.0.26300 x64, 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+  "seed": 42,
+  "duration_s": 30
+}

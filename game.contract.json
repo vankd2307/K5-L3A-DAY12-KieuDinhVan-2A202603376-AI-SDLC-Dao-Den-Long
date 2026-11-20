@@ -1,9 +1,11 @@
 {
-  "contract_version": "1.2",
+  "contract_version": "1.3",
   "team": "2A202603376-KieuDinhVan",
   "build_cmd": "npm ci",
-  "run_cmd": "npm run dev",
+  "run_cmd": "npm start --",
   "headless_cmd": "node --import tsx src/headless/cli.ts",
+  "bench_cmd": "npm run bench --",
+  "soak_cmd": "node --expose-gc --import tsx src/headless/soak.ts",
   "tuning": {
     "player_speed": 6,
     "carry_capacity": 10,

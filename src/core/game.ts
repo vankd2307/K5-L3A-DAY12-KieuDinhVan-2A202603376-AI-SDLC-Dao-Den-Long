@@ -35,6 +35,11 @@ export class Game {
   randomShades = true;
   randomDrifters: boolean;
   windEnabled: boolean;
+  /**
+   * Phase 4 benchmark scene: no spawns, damage, pickups, fuel decay or end of Night; shades keep
+   * wandering (Mây is ignored). Always false outside the bench, so headless output is unchanged.
+   */
+  bench = false;
 
   tick = 0; // steps executed (keeps counting while paused)
   simTick = 0; // simulated steps
@@ -285,7 +290,7 @@ export class Game {
     // fuel: decay 1/60 per tick + 5/60 per draining shade (integer units)
     const t = this.tuning;
     for (const l of this.lanterns) {
-      if (!l.lit) continue;
+      if (!l.lit || this.bench) continue;
       const drainers = this.shades.filter((s) => s.state === 'drain' && s.targetLanternId === l.id);
       l.fuelUnits -= t.fuel_decay_per_s + t.drain_per_s * drainers.length;
       for (const s of drainers) {
@@ -410,7 +415,7 @@ export class Game {
 
   private pickups(): void {
     const p = this.player;
-    if (p.respawnTicks > 0) return;
+    if (p.respawnTicks > 0 || this.bench) return;
     const r = this.tuning.pickup_radius;
     const near = (pos: Vec3) => hdist(pos, p.pos) <= r && Math.abs(pos[1] - p.pos[1]) <= STD.pickupHeight;
     this.motes = this.motes.filter((m) => {
@@ -535,7 +540,7 @@ export class Game {
 
   private moveShades(): void {
     const p = this.player;
-    const here = p.respawnTicks === 0;
+    const here = p.respawnTicks === 0 && !this.bench;
     for (const s of this.shades) {
       if (s.evictTicks > 0) continue;
       const d = hdist(s.pos, p.pos);
@@ -678,7 +683,7 @@ export class Game {
 
   private drifterContacts(): void {
     const p = this.player;
-    if (p.respawnTicks > 0) return;
+    if (p.respawnTicks > 0 || this.bench) return;
     for (const d of [...this.drifters].sort((a, b) => idNum(a.id) - idNum(b.id))) {
       if (d.state !== 'chase' || hdist(d.pos, p.pos) > STD.drifterHit) continue;
       const amount = Math.min(STD.drifterStealMax, p.carried);
@@ -693,7 +698,7 @@ export class Game {
 
   private shadeContacts(): void {
     const p = this.player;
-    if (p.respawnTicks > 0) return;
+    if (p.respawnTicks > 0 || this.bench) return;
     for (const s of [...this.shades].sort((a, b) => idNum(a.id) - idNum(b.id))) {
       if ((s.state !== 'chase' && s.state !== 'wander') || s.evictTicks > 0) continue;
       if (hdist(s.pos, p.pos) > this.tuning.shade_hit_radius || Math.abs(s.pos[1] - p.pos[1]) > STD.hitHeight) continue;
@@ -730,6 +735,7 @@ export class Game {
   }
 
   private spawns(): void {
+    if (this.bench) return;
     const st = this.simTick;
     const p = this.player;
     if (this.randomMotes && st % STD.moteSpawnEvery === 0 && this.motes.length < STD.moteCap) {
@@ -761,6 +767,7 @@ export class Game {
   }
 
   private checkEnd(): void {
+    if (this.bench) return;
     if (this.player.flames <= 0) this.finish('lost', 'no_flames');
     else if (this.durationS - this.simTick / TICK_RATE <= 1e-9) {
       const lit = this.lanterns.filter((l) => l.lit).length;

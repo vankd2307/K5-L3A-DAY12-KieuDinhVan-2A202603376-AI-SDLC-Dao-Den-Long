@@ -5,47 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đảo Đèn Lồng</title>
     <style>
-      :root { --text: #F5F1E6; --gold: #F2C14E; --danger: #FF5A5F; --lit: #FFB347; --panel: rgba(14, 20, 48, .72); }
+      :root { --text: #F5F1E6; --gold: #F2C14E; --danger: #FF5A5F; --lit: #FFB347; --shade: #B07CFF; --panel: rgba(14, 20, 48, .82); }
+      /* Phase 4: every UI text is >= 1rem = 18px at 1280x720; "Chữ lớn" scales everything x1.25 */
+      html { font-size: 18px; }
+      html.large { font-size: 22.5px; }
       html, body { margin: 0; height: 100%; overflow: hidden; background: #0E1430; font-family: system-ui, sans-serif; color: var(--text); }
       #app canvas { display: block; }
-      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #hud { position: fixed; inset: 0; pointer-events: none; font-size: 1rem; }
       .tl, .tc, .tr, .bc, .br { position: fixed; }
-      .tl { top: 14px; left: 16px; font-size: 26px; }
+      .tl { top: .8rem; left: .9rem; font-size: 1.45rem; }
       .tl .off { filter: grayscale(1) brightness(.4); }
-      .tc { top: 12px; left: 50%; transform: translateX(-50%); text-align: center; }
-      #timer { font-size: 34px; font-weight: 700; letter-spacing: 1px; }
+      .tc { top: .6rem; left: 50%; transform: translateX(-50%); text-align: center; }
+      #timer { font-size: 1.9rem; font-weight: 700; letter-spacing: 1px; }
       #timer.danger { color: var(--danger); }
-      body.cb { --danger: #FFFFFF; }
-      #need { font-size: 12px; opacity: .8; }
-      #carry { font-size: 14px; margin-top: 4px; }
+      body.cb { --danger: #FFFFFF; --shade: #00B3FF; }
+      #need, #carry, #nightname { font-size: 1rem; }
+      #carry { margin-top: .2rem; }
       #timer.blink { opacity: .35; }
-      #nightname { font-size: 13px; opacity: .8; }
-      .tr { top: 14px; right: 18px; text-align: right; font-size: 18px; line-height: 1.5; }
-      .tr b { color: var(--gold); font-size: 22px; }
-      .bc { bottom: 18px; left: 50%; transform: translateX(-50%); text-align: center; }
+      #nightname { opacity: .85; }
+      .tr { top: .8rem; right: 1rem; text-align: right; font-size: 1rem; line-height: 1.5; }
+      .tr b { color: var(--gold); font-size: 1.25rem; }
+      .bc { bottom: 1rem; left: 50%; transform: translateX(-50%); text-align: center; }
       #motebar { display: flex; gap: 5px; justify-content: center; }
-      #motebar i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255, 229, 138, .5); background: rgba(0, 0, 0, .3); }
+      #motebar i { width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 2px solid rgba(255, 229, 138, .5); background: rgba(0, 0, 0, .3); }
       #motebar i.full { background: radial-gradient(#FFF6C2 30%, #FFE58A 70%); box-shadow: 0 0 10px #FFE58A; }
-      #hint { margin-bottom: 10px; font-size: 20px; color: var(--text); text-shadow: 0 0 10px var(--lit); min-height: 26px; }
-      #windwarn { font-size: 16px; color: #9cc27a; min-height: 20px; }
-      .br { bottom: 18px; right: 18px; display: flex; gap: 12px; align-items: flex-end; }
-      .cd { --p: 0; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; text-align: center;
+      #hint { margin-bottom: .5rem; font-size: 1.1rem; color: var(--text); text-shadow: 0 0 10px var(--lit); min-height: 1.5rem; }
+      .br { bottom: 1rem; right: 1rem; display: flex; gap: .6rem; align-items: flex-end; }
+      .cd { --p: 0; width: 4.6rem; height: 4.6rem; border-radius: 50%; display: grid; place-content: center; font-size: 1rem; line-height: 1.15; text-align: center;
             background: conic-gradient(rgba(14, 20, 48, .85) calc(var(--p) * 360deg), rgba(255, 179, 71, .35) 0); border: 2px solid rgba(255, 255, 255, .25); }
       .cd.ready { border-color: var(--lit); box-shadow: 0 0 10px var(--lit); }
-      #charm { color: #ff8a8a; font-size: 14px; }
-      #arrow { position: fixed; font-size: 34px; color: var(--lit); text-shadow: 0 0 8px var(--lit); display: none; }
+      #charm { color: #ff8a8a; font-size: 1rem; }
+      #arrow, #shade-arrow { position: fixed; font-size: 1.9rem; display: none; }
+      #arrow { color: var(--lit); text-shadow: 0 0 8px var(--lit); }
+      #shade-arrow { color: var(--shade); text-shadow: 0 0 8px var(--shade), 0 0 2px #000; font-size: 2.2rem; }
+      /* Phase 4 captions / visual cues, top-left under the flames */
+      #captions { position: fixed; top: 3.4rem; left: .9rem; display: flex; flex-direction: column; gap: .3rem; align-items: flex-start; max-width: 40%; }
+      .cap { background: rgba(10, 12, 32, .78); padding: .2rem .6rem; border-radius: 8px; border-left: 4px solid var(--gold); font-size: 1rem; }
+      .cap.shade { border-color: var(--shade); }
+      .cap.wind { border-color: #9cc27a; }
+      .cap.time, .cap.fuel { border-color: var(--danger); }
       #hit { position: fixed; inset: 0; background: radial-gradient(transparent 50%, #7A3CFF); opacity: 0; pointer-events: none; }
-      .screen { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10, 12, 32, .62); text-align: center; }
+      .screen { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10, 12, 32, .62); text-align: center; font-size: 1rem; }
       .screen.show { display: grid; }
-      .card { background: var(--panel); padding: 28px 36px; border-radius: 16px; max-width: 560px; border: 1px solid rgba(242, 193, 78, .35); }
-      .card h1 { color: var(--lit); margin: 0 0 10px; font-size: 40px; }
-      .card h2 { color: var(--gold); margin: 0 0 8px; }
+      .card { background: var(--panel); padding: 1.4rem 2rem; border-radius: 16px; max-width: 34rem; max-height: 88vh; overflow-y: auto; border: 1px solid rgba(242, 193, 78, .35); }
+      .card.wide { max-width: 44rem; }
+      .card h1 { color: var(--lit); margin: 0 0 .5rem; font-size: 2.1rem; }
+      .card h2 { color: var(--gold); margin: 0 0 .5rem; font-size: 1.45rem; }
+      .card h3 { color: var(--gold); margin: 1rem 0 .4rem; font-size: 1.1rem; text-align: left; }
       .card p { line-height: 1.5; }
-      button { font: inherit; font-size: 18px; margin: 6px; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--gold); background: #2a2350; color: var(--text); cursor: pointer; }
-      button:hover { background: #3a3170; }
-      label { display: block; margin: 14px 0; text-align: left; }
+      button { font: inherit; font-size: 1rem; margin: .3rem; padding: .5rem 1.1rem; border-radius: 10px; border: 1px solid var(--gold); background: #2a2350; color: var(--text); cursor: pointer; }
+      button:hover, button:focus-visible { background: #3a3170; outline: 2px solid var(--gold); }
+      label { display: block; margin: .7rem 0; text-align: left; }
       input[type=range] { width: 100%; }
-      .keys { font-size: 13px; opacity: .75; margin-top: 14px; }
+      input[type=checkbox] { width: 1.1rem; height: 1.1rem; vertical-align: middle; }
+      input[type=text] { font: inherit; font-size: 1.1rem; padding: .4rem .6rem; border-radius: 8px; border: 1px solid var(--gold); background: #1a1838; color: var(--text); width: 12rem; }
+      .keys { font-size: 1rem; opacity: .85; margin-top: .7rem; line-height: 1.5; }
+      #keymap { display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem; align-items: center; text-align: left; }
+      #keymap button { min-width: 7rem; margin: .1rem 0; }
+      #keymap button.wait { background: var(--gold); color: #1a1838; }
+      .msg { min-height: 1.4rem; color: var(--lit); margin: .4rem 0; }
+      .msg.err { color: var(--danger); }
+      table.board { border-collapse: collapse; width: 100%; margin: .5rem 0; }
+      table.board th, table.board td { padding: .25rem .5rem; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+      table.board tr.me td { color: var(--gold); font-weight: 700; }
+      body > #save-form { display: none; }
+      .save { margin-top: .8rem; padding-top: .6rem; border-top: 1px solid rgba(255, 255, 255, .15); }
     </style>
   </head>
   <body>
@@ -53,18 +77,20 @@
     <div id="hit"></div>
     <div id="hud">
       <div class="tl" id="flames"></div>
+      <div id="captions" aria-live="polite"></div>
       <div class="tc"><div id="timer">05:00</div><div id="nightname"></div></div>
       <div class="tr">Đèn <b id="lit">0/5</b><div id="need"></div>Điểm <b id="score">0</b></div>
-      <div class="bc"><div id="windwarn"></div><div id="hint"></div><div id="motebar"></div><div id="carry"></div></div>
-      <div class="br"><div id="charm"></div><div class="cd" id="cd-dash">Lướt<br />Shift</div><div class="cd" id="cd-pulse">Tỏa sáng<br />F</div></div>
+      <div class="bc"><div id="hint"></div><div id="motebar"></div><div id="carry"></div></div>
+      <div class="br"><div id="charm"></div><div class="cd" id="cd-dash">Lướt<span id="cd-dash-key"></span></div><div class="cd" id="cd-pulse">Tỏa sáng<span id="cd-pulse-key"></span></div></div>
       <div id="arrow">➤</div>
+      <div id="shade-arrow">➤</div>
     </div>
 
     <div class="screen" id="menu"><div class="card">
       <h1>Đảo Đèn Lồng</h1>
       <p>Ba đêm, ba hòn đảo. Giúp Mây giữ những Đèn Lồng Lớn cháy sáng tới bình minh.</p>
-      <button id="btn-start">Bắt đầu</button><button id="btn-settings">Cài đặt</button>
-      <div class="keys">WASD: đi · Space: nhảy · Shift/Q: lướt · E: nạp đèn · F: tỏa sáng · Esc/P: tạm dừng · kéo chuột hoặc ←/→: xoay camera</div>
+      <button id="btn-start">Bắt đầu</button><button id="btn-board">Bảng xếp hạng</button><button id="btn-settings">Cài đặt</button>
+      <div class="keys" id="menu-keys"></div>
     </div></div>
 
     <div class="screen" id="intro"><div class="card">
@@ -74,11 +100,28 @@
     <div class="screen" id="result"><div class="card">
       <h1 id="result-title"></h1><p id="result-text"></p>
       <button id="btn-next">Đêm tiếp theo</button><button id="btn-retry">Chơi lại Đêm</button><button id="btn-menu2">Về menu</button>
+      <div class="save" id="save-slot-result"></div>
     </div></div>
 
     <div class="screen" id="dawn"><div class="card">
       <h1>Bình Minh</h1><p>Ba hòn đảo đã sáng trở lại. Ông Đăng mỉm cười: "Cảm ơn con, Mây."</p>
-      <h2>Tổng điểm: <span id="dawn-score"></span></h2><button id="btn-dawn-menu">Về menu</button>
+      <h2>Tổng điểm: <span id="dawn-score"></span></h2>
+      <div class="save" id="save-slot-dawn"></div>
+      <button id="btn-dawn-menu">Về menu</button>
+    </div></div>
+
+    <!-- name entry, moved into the result or dawn card when needed -->
+    <div id="save-form">
+      <label for="save-name">Lưu điểm vào Bảng xếp hạng (3–12 ký tự: chữ, số, _; có thể gõ tiếng Việt có dấu)</label>
+      <input id="save-name" type="text" maxlength="24" autocomplete="off" spellcheck="false" /><button id="btn-save">Lưu điểm</button>
+      <div class="msg" id="save-msg" aria-live="polite"></div>
+    </div>
+
+    <div class="screen" id="board"><div class="card wide">
+      <h2>Bảng xếp hạng</h2>
+      <table class="board"><thead><tr><th>#</th><th>Tên</th><th>Điểm</th><th>Đêm thắng</th><th>Thời điểm</th></tr></thead><tbody id="board-rows"></tbody></table>
+      <p id="board-empty">Chưa có ai. Hãy là người đầu tiên!</p>
+      <button id="btn-board-back">Quay lại</button>
     </div></div>
 
     <div class="screen" id="pause"><div class="card">
@@ -86,12 +129,17 @@
       <button id="btn-resume">Tiếp tục</button><button id="btn-restart">Chơi lại Đêm</button><button id="btn-pause-settings">Cài đặt</button><button id="btn-quit">Về menu</button>
     </div></div>
 
-    <div class="screen" id="settings"><div class="card">
+    <div class="screen" id="settings"><div class="card wide">
       <h2>Cài đặt</h2>
       <label>Âm lượng <input id="set-volume" type="range" min="0" max="1" step="0.05" /></label>
       <label>Độ nhạy chuột <input id="set-sens" type="range" min="0.2" max="2" step="0.1" /></label>
       <label><input id="set-cb" type="checkbox" /> Bảng màu dễ phân biệt</label>
-      <button id="btn-settings-back">Quay lại</button>
+      <label><input id="set-motion" type="checkbox" /> Giảm chuyển động (tắt rung camera, chớp màn hình, nhấp nháy đồng hồ)</label>
+      <label><input id="set-large" type="checkbox" /> Chữ lớn (×1.25)</label>
+      <h3>Phím điều khiển (bấm vào ô rồi nhấn phím mới, Esc để hủy)</h3>
+      <div id="keymap"></div>
+      <div class="msg" id="key-msg" aria-live="polite"></div>
+      <button id="btn-keys-reset">Khôi phục mặc định</button><button id="btn-settings-back">Quay lại</button>
     </div></div>
 
     <script type="module" src="/src/main.ts"></script>

@@ -6,3 +6,5 @@ export * from './game';
 export * from './scenario';
 export * from './inputs';
 export * from './run';
+export * from './bench';
+export * from './soak';

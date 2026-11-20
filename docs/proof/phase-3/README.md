@@ -1,6 +1,6 @@
 # Bằng chứng Phase 3 (Ticket-03 "Đèn cạn dầu", Contract v1.2)
 
-Thiết kế: [ADR 0001](../../adr/0001-lantern-fuel-and-dawn-win.md) · Breaking changes: [CHANGELOG](../../CHANGELOG.md) · Máy: Intel i5-11400H, Node 22.21.0.
+Thiết kế: [ADR 0001](../../adr/0001-lantern-fuel-and-dawn-win.md) · Breaking changes: [CHANGELOG](../../../CHANGELOG.md) · Máy: Intel i5-11400H, Node 22.21.0.
 
 ## Test tự động: `npm test` → 84/84 đạt
 
@@ -43,7 +43,6 @@ Bot ([scripts/autoplay.ts](../../../scripts/autoplay.ts)) đổi mục tiêu cho
 
 Một đêm đầy đủ (tắt Bóng Mực để không chết sớm) chạy hết 328 / 385 / 434 ms cho Đêm 1 / 2 / 3. Hai lần chạy seed 4, Đêm 2, đủ 21 600 tick cho kết quả giống hệt.
 
-## UI (ảnh chụp game thật bằng Chrome headless, tình huống dựng bằng `?scenario=`)
 
 | Ảnh | Cho thấy |
 |---|---|
@@ -52,4 +51,3 @@ Một đêm đầy đủ (tắt Bóng Mực để không chết sớm) chạy h�
 | ![](screenshots/result-dawn-survived.png) | §3 thắng ở bình minh: 491 = 3 × 50 + (63 + 39 + 89) dầu + 3 × 50 lửa |
 | ![](screenshots/result-dawn-lost.png) | §3 thua: chỉ 2 đèn sáng, dưới ngưỡng 3 |
 
-**Chưa kiểm bằng tay:** nhấp nháy 1 Hz chỉ thấy gián tiếp qua hai ảnh chụp ở hai pha khác nhau; checkbox "Bảng màu dễ phân biệt" trong Cài đặt mới chỉ được unit test phần lưu.

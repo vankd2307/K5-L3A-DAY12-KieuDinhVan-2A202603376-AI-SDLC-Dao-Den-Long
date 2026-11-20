@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { loadSettings, saveSettings } from '../src/render/settings';
+import { DEFAULT_KEYS, DEFAULTS, loadSettings, saveSettings } from '../src/render/settings';
 
 // Minimal in-memory localStorage: the same store survives between "page loads".
 const store = new Map<string, string>();
@@ -11,18 +11,20 @@ beforeEach(() => {
   };
 });
 
+// Phase 4 added reducedMotion, largeText and keys to Settings: expectations use the full object.
 describe('F5 settings persistence', () => {
   it('defaults when nothing is saved', () => {
-    expect(loadSettings()).toEqual({ volume: 0.7, sensitivity: 1, colorblind: false });
+    expect(loadSettings()).toEqual(DEFAULTS);
   });
   it('saved volume and sensitivity are loaded again (survive a reload)', () => {
-    saveSettings({ volume: 0.25, sensitivity: 1.6, colorblind: true });
-    expect(loadSettings()).toEqual({ volume: 0.25, sensitivity: 1.6, colorblind: true });
+    const s = { ...DEFAULTS, volume: 0.25, sensitivity: 1.6, colorblind: true, reducedMotion: true, largeText: true, keys: { ...DEFAULT_KEYS, jump: 'KeyJ' } };
+    saveSettings(s);
+    expect(loadSettings()).toEqual(s);
   });
   it('corrupt or out-of-range values fall back safely', () => {
     store.set('dao-den-long.settings', '{"volume": 9, "sensitivity": "x"}');
-    expect(loadSettings()).toEqual({ volume: 1, sensitivity: 1, colorblind: false });
+    expect(loadSettings()).toEqual({ ...DEFAULTS, volume: 1 });
     store.set('dao-den-long.settings', 'not json');
-    expect(loadSettings()).toEqual({ volume: 0.7, sensitivity: 1, colorblind: false });
+    expect(loadSettings()).toEqual(DEFAULTS);
   });
 });

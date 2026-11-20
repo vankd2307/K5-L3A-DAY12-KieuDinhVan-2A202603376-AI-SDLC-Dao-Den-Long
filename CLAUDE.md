@@ -14,8 +14,11 @@
 - Test do: kiem tra ky vong cua test truoc (AI tung viet sai ky vong 3 lan o Phase 2), khong sua luat cho khop test.
 - Kiem chung truoc khi tag: dung skill .claude/skills/verify-phase.
 - Dau den luu so nguyen 1/60 (Lantern.fuelUnits). Nguong dung helper cua Game (hasSafeZone, isWeak, accepts, lightCost, capacity, litNeeded), khong tinh lai o noi khac.
-- Ticket thay luat: ghi ADR (docs/adr/) + CHANGELOG (docs/CHANGELOG.md), chay test TRUOC khi sua test de liet ke dung test bi anh huong.
+- Ticket thay luat: ghi ADR (docs/adr/) + CHANGELOG (CHANGELOG.md o goc repo), chay test TRUOC khi sua test de liet ke dung test bi anh huong.
 - Script Python sua file: ghi ra file .py trong scratchpad roi chay (heredoc bash tren Windows hay loi parse).
 - Lenh: `npm test` (vitest), `npm run typecheck`, `npm run dev`, headless = headless_cmd trong game.contract.json.
 - Xong viec: chay `npm run typecheck && npm test`; cap nhat docs/proof/phase-N/README.md (yeu cau -> bang chung -> ket qua, ghi "chua dat" neu chua).
 - Sang tao them (thuc the moi...) khong duoc doi output headless khi scenario tat random.
+- Phase 4: `Game.bench` (mac dinh false) chi dung cho canh benchmark; khong dung no de doi luat choi. Dau ra headless phai giong byte voi Phase 3 (test P4-HEADLESS).
+- Hieu nang: do truoc (bench in sim/render/hud ms) roi moi toi uu. HUD chi ghi DOM khi gia tri doi.
+- Bang xep hang/du lieu nguoi choi: khi thu nghiem dat DDL_DATA_DIR vao thu muc tam, khong ghi vao ~/.dao-den-long that.
