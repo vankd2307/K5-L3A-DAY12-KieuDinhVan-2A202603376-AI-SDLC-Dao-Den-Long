@@ -10,9 +10,9 @@ Thiết kế: [ADR 0002](../../adr/0002-bench-soak-leaderboard.md) · [CHANGELOG
 | §2 Soak 10 Đêm, 1 tiến trình | [soak.json](../../../soak.json), test P4-SOAK | **Đạt**: 0 crash, RAM 73.2 → 79.5 MB (×1.09 ≤ ×1.2) |
 | §3 Bảng xếp hạng | test P4-BOARD, thử API thật, ảnh | **Đạt** |
 | §4 Đổi phím, phụ đề, giảm chuyển động, cỡ chữ | test P4-ACCESS + settings, ảnh | **Đạt**  |
-| §5 Đóng gói, tài liệu | [README](../../../README.md), [CHANGELOG](../../../CHANGELOG.md), [CREDITS](../../../CREDITS.md), [LICENSE](../../../LICENSE) | README, CHANGELOG, CREDITS, LICENSE: **Đạt**. Release v1.0.0:  |
+| §5 Đóng gói, tài liệu | [README](../../../README.md), [CHANGELOG](../../../CHANGELOG.md), [CREDITS](../../../CREDITS.md), [LICENSE](../../../LICENSE) | README, CHANGELOG, CREDITS, LICENSE: **Đạt**. [Release v1.0.0](https://github.com/vankd2307/K5-L3A-DAY12-KieuDinhVan-2A202603376-AI-SDLC-Dao-Den-Long/releases/tag/v1.0.0) (bản web tĩnh zip): **Đạt** |
 | §6 Contract v1.3 (`contract_version`, `bench_cmd`, `soak_cmd`, giữ v1.0–v1.2) | contract.test, P4-HEADLESS | **Đạt** |
-| §7 Retro, video demo | [docs/notes/retro.md](../../notes/retro.md) | Retro: có bản nháp (cần điền token/chi phí). Video: **chưa đạt** |
+| §7 Retro, video demo | [docs/notes/retro.md](../../notes/retro.md) | Retro: có bản nháp (cần điền token/chi phí). [Video demo](https://github.com/vankd2307/K5-L3A-DAY12-KieuDinhVan-2A202603376-AI-SDLC-Dao-Den-Long/releases/download/v1.0.0/2026-11-20.22-46-35.mp4) (đính kèm Release): **Đạt** |
 
 ## Test tự động: `npm test` → 104/104 đạt
 
