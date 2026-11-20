@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.core.json",
     "test": "vitest run",
-    "headless": "tsx src/headless/cli.ts"
+    "headless": "tsx src/headless/cli.ts",
+    "autoplay": "tsx scripts/autoplay.ts"
   },
   "dependencies": {
     "three": "^0.187.0"

@@ -1,33 +1,68 @@
 /**
- * Headless runner (Node, no window). Placeholder interface until the Test Contract is known:
- *   npm run headless -- <scenario.json>
- * scenario: { "seed": number, "ticks": number, "inputs"?: { [tick]: TickInput } }
+ * Test Contract v1.0 headless runner:
+ *   <headless_cmd> --seed <int> --night 1 [--scenario f.json] [--inputs f.jsonl]
+ *                  --ticks <int> --out f.jsonl [--snapshot-every <int, default 60>]
+ * Exit 0 ok; 2 bad arguments / malformed inputs or scenario; 1 any other error.
  */
-import { readFileSync } from 'node:fs';
-import { DEFAULT_CONFIG, Game, type TickInput } from '../core';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { DEFAULT_SNAPSHOT_EVERY, FormatError, parseInputs, runHeadless } from '../core';
 
-interface Scenario {
-  seed: number;
-  ticks: number;
-  inputs?: Record<string, TickInput>;
-}
+const FLAGS = new Set(['--seed', '--night', '--scenario', '--inputs', '--ticks', '--out', '--snapshot-every']);
 
-const IDLE: TickInput = { moveX: 0, moveZ: 0 };
-
-export function runScenario(sc: Scenario): Game {
-  const game = new Game(DEFAULT_CONFIG, sc.seed);
-  let input = IDLE;
-  for (let t = 0; t < sc.ticks; t++) {
-    input = sc.inputs?.[String(t)] ?? input; // input holds until changed
-    game.step(input);
+function parseArgs(argv: string[]): Map<string, string> {
+  const m = new Map<string, string>();
+  for (let i = 0; i < argv.length; i += 2) {
+    const k = argv[i]!;
+    const v = argv[i + 1];
+    if (!FLAGS.has(k)) throw new FormatError(`unknown argument ${k}`);
+    if (v === undefined) throw new FormatError(`missing value for ${k}`);
+    m.set(k, v);
   }
-  return game;
+  return m;
 }
 
-const file = process.argv[2];
-if (!file) {
-  console.error('usage: npm run headless -- <scenario.json>');
-  process.exit(2);
+function int(m: Map<string, string>, k: string, min: number, def?: number): number {
+  const s = m.get(k);
+  if (s === undefined) {
+    if (def !== undefined) return def;
+    throw new FormatError(`missing required ${k}`);
+  }
+  if (!/^-?\d+$/.test(s) || Number(s) < min) throw new FormatError(`${k} must be an integer >= ${min}`);
+  return Number(s);
 }
-const game = runScenario(JSON.parse(readFileSync(file, 'utf8')) as Scenario);
-process.stdout.write(JSON.stringify(game.state) + '\n');
+
+function readJson(path: string, what: string): unknown {
+  const text = readFileSync(path, 'utf8').replace(/^﻿/, '');
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new FormatError(`${what} ${path}: invalid JSON`);
+  }
+}
+
+function main(): void {
+  const args = parseArgs(process.argv.slice(2));
+  const seed = int(args, '--seed', -(2 ** 31));
+  if (int(args, '--night', 1) !== 1) throw new FormatError('only --night 1 exists in this build');
+  const ticks = int(args, '--ticks', 0);
+  const snapshotEvery = int(args, '--snapshot-every', 1, DEFAULT_SNAPSHOT_EVERY);
+  const out = args.get('--out');
+  if (!out) throw new FormatError('missing required --out');
+
+  const scenarioPath = args.get('--scenario');
+  const inputsPath = args.get('--inputs');
+  const scenario = scenarioPath ? readJson(scenarioPath, 'scenario') : undefined;
+  const frames = inputsPath ? parseInputs(readFileSync(inputsPath, 'utf8')) : [];
+
+  const lines: string[] = [];
+  runHeadless({ seed, ticks, snapshotEvery, scenario, frames }, (o) => lines.push(JSON.stringify(o)));
+  writeFileSync(out, lines.join('\n') + '\n');
+}
+
+try {
+  main();
+} catch (e) {
+  const msg = e instanceof Error ? e.message : String(e);
+  process.stderr.write(`error: ${msg}\n`);
+  process.exit(e instanceof FormatError ? 2 : 1);
+}

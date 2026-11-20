@@ -5,12 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đảo Đèn Lồng</title>
     <style>
-      html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d1a; }
-      #hud { position: fixed; top: 8px; left: 8px; color: #ffe9a8; font: 14px monospace; pointer-events: none; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b1f; font-family: system-ui, sans-serif; }
+      #app canvas { display: block; }
+      #hud { position: fixed; top: 12px; left: 12px; display: grid; grid-template-columns: auto auto; gap: 4px 14px;
+             padding: 10px 14px; border-radius: 10px; background: rgba(20, 12, 40, .55); color: #ffe9b8; font-size: 15px; pointer-events: none; }
+      #hud b { color: #ffb347; font-weight: 600; }
+      #pulse { position: fixed; bottom: 16px; left: 12px; color: #ffd27a; font-size: 14px; }
+      #pulse.dim { color: #8f86b0; }
+      #hint { position: fixed; bottom: 60px; width: 100%; text-align: center; color: #ffe9b8; font-size: 18px; text-shadow: 0 0 8px #ff9a3d; pointer-events: none; }
+      #keys { position: fixed; bottom: 16px; right: 12px; color: #a99fd0; font-size: 13px; text-align: right; }
+      #hit { position: fixed; inset: 0; background: radial-gradient(transparent 50%, #5a1a8a); opacity: 0; pointer-events: none; }
+      #overlay { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10, 6, 25, .6); color: #ffe9b8; text-align: center; }
+      #overlay.show { display: grid; }
+      #overlay h1 { font-size: 42px; margin: 0 0 8px; color: #ffb347; }
     </style>
   </head>
   <body>
-    <div id="hud"></div>
+    <div id="app"></div>
+    <div id="hit"></div>
+    <div id="hud">
+      <span>Lửa</span><b id="flames"></b>
+      <span>Đom đóm</span><b id="carried"></b>
+      <span>Đèn đã thắp</span><b id="lit"></b>
+      <span>Bình minh sau</span><b id="time"></b>
+      <span>Điểm</span><b id="score"></b>
+    </div>
+    <div id="hint"></div>
+    <div id="pulse"></div>
+    <div id="keys">WASD: đi · Space: nhảy · E: nạp đèn · F/Shift: tỏa sáng<br />←/→ hoặc kéo chuột: xoay camera · R: chơi lại</div>
+    <div id="overlay"><div><h1 id="result"></h1><p id="final"></p><p>Nhấn <b>R</b> để chơi lại</p></div></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
