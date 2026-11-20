@@ -13,7 +13,7 @@ npm ci          # cài đặt
 npm run dev     # mở game: http://localhost:5173
 ```
 
-Mở `http://localhost:5173/?night=2` để vào thẳng một đêm (dùng khi thử nghiệm hoặc quay demo).
+Mở `http://localhost:5173/?night=2` để vào thẳng một đêm. Thêm `&scenario=<JSON theo contract>` để dựng sẵn tình huống, `&instant` để hiện màn kết quả ngay (dùng khi thử nghiệm hoặc quay demo).
 
 | Lệnh | Việc |
 |---|---|
