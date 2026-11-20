@@ -1,0 +1,5 @@
+Máy: Intel i5-11400H, Node v22.21.0
+night 1: {"type":"end","ticks":14400,"state":"lost","score":0} in 328 ms
+night 2: {"type":"end","ticks":16200,"state":"lost","score":0} in 385 ms
+night 3: {"type":"end","ticks":18000,"state":"lost","score":0} in 434 ms
+determinism (seed 4, night 2, full run): identical

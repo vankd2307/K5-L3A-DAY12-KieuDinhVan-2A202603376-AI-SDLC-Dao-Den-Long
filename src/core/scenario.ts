@@ -1,5 +1,6 @@
 import { FormatError, isNum, isObj } from './errors';
 import type { Game } from './game';
+import { FUEL_UNIT } from './tuning';
 import type { DrifterState, ShadeState, Vec3 } from './types';
 
 function vec3(v: unknown, where: string): Vec3 {
@@ -33,7 +34,7 @@ function optId(v: unknown, where: string): string | undefined {
 }
 const serial = (ids: string[]) => Math.max(0, ...ids.map((id) => Number(/^\D+(\d+)$/.exec(id)?.[1] ?? 0)));
 
-const SHADE_STATES: readonly ShadeState[] = ['spawning', 'wander', 'chase', 'recoil', 'stunned'];
+const SHADE_STATES: readonly ShadeState[] = ['spawning', 'wander', 'chase', 'recoil', 'stunned', 'drain'];
 const DRIFTER_STATES: readonly DrifterState[] = ['idle', 'chase', 'flee', 'removed'];
 
 /**
@@ -62,6 +63,7 @@ export function applyScenario(game: Game, raw: unknown): void {
     if (p.dash_cd_ticks !== undefined) pl.dashCdTicks = count(p.dash_cd_ticks, 'scenario.player.dash_cd_ticks');
     if (p.pulse_cd_ticks !== undefined) pl.pulseCdTicks = count(p.pulse_cd_ticks, 'scenario.player.pulse_cd_ticks');
     if (p.charm_ticks !== undefined) pl.charmTicks = count(p.charm_ticks, 'scenario.player.charm_ticks');
+    if (p.successful_lights !== undefined) pl.successfulLights = count(p.successful_lights, 'scenario.player.successful_lights');
   }
 
   if (sc.lanterns !== undefined) {
@@ -73,6 +75,13 @@ export function applyScenario(game: Game, raw: unknown): void {
       if (l.pos !== undefined) target.pos = vec3(l.pos, `${where}.pos`);
       if (l.deposited !== undefined) target.deposited = count(l.deposited, `${where}.deposited`);
       if (l.lit !== undefined) target.lit = bool(l.lit, `${where}.lit`);
+      if (l.ever_lit !== undefined) target.everLit = bool(l.ever_lit, `${where}.ever_lit`);
+      else if (target.lit) target.everLit = true;
+      if (l.fuel !== undefined) {
+        if (!isNum(l.fuel) || l.fuel < 0 || l.fuel > game.tuning.fuel_max) throw new FormatError(`${where}.fuel: expected 0..${game.tuning.fuel_max}`);
+        target.fuelUnits = Math.round(l.fuel * FUEL_UNIT);
+      } else if (target.lit) target.fuelUnits = game.fuelMaxUnits; // lit without fuel => 100
+      if (!target.lit) target.fuelUnits = 0;
     }
   }
 
@@ -102,6 +111,12 @@ export function applyScenario(game: Game, raw: unknown): void {
       if (shade.state === 'spawning' && o.state_ticks_left === undefined) shade.stateTicks = 60;
       if (shade.state === 'recoil' && o.state_ticks_left === undefined) shade.stateTicks = 60;
       if (shade.state === 'stunned' && o.state_ticks_left === undefined) shade.stateTicks = 120;
+      if (o.target_lantern_id !== undefined) {
+        if (typeof o.target_lantern_id !== 'string' || !game.lanterns.some((l) => l.id === o.target_lantern_id)) {
+          throw new FormatError(`${where}.target_lantern_id: unknown lantern`);
+        }
+        shade.targetLanternId = o.target_lantern_id;
+      }
       return shade;
     });
     game.shades = shades;

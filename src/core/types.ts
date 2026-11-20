@@ -25,6 +25,7 @@ export interface Player {
   dashDir: [number, number];
   pulseCdTicks: number;
   charmTicks: number;
+  successfulLights: number;
   /** horizontal velocity from a launch pad, held until landing */
   launch: [number, number] | null;
   /** > 0 while waiting to respawn after falling off */
@@ -33,12 +34,15 @@ export interface Player {
 
 export interface Lantern {
   id: string;
-  pos: Vec3;
+  pos: Vec3; // foot of the post
   deposited: number;
   lit: boolean;
+  fuelUnits: number; // fuel x 60 (integer)
+  everLit: boolean;
+  relitCount: number;
 }
 
-export type ShadeState = 'spawning' | 'wander' | 'chase' | 'recoil' | 'stunned';
+export type ShadeState = 'spawning' | 'wander' | 'chase' | 'recoil' | 'stunned' | 'drain';
 
 export interface Shade {
   id: string;
@@ -50,6 +54,8 @@ export interface Shade {
   evictTicks: number;
   evictStep: [number, number];
   target: [number, number] | null; // wander target
+  targetLanternId: string | null; // drain target
+  drainTicks: number;
 }
 
 export type MoteKind = 'random' | 'dropped';
@@ -87,7 +93,10 @@ export type GameEvent =
   | { name: 'night_start'; data: { night: number } }
   | { name: 'mote_picked'; data: { carried: number } }
   | { name: 'deposit'; data: { lantern_id: string; amount: number; deposited: number } }
-  | { name: 'lantern_lit'; data: { lantern_id: string } }
+  | { name: 'lantern_lit'; data: { lantern_id: string; relight: boolean } }
+  | { name: 'refuel'; data: { lantern_id: string; amount: number; fuel: number } }
+  | { name: 'lantern_out'; data: { lantern_id: string } }
+  | { name: 'fuel_drain'; data: { lantern_id: string; shade_id: string; fuel: number } }
   | { name: 'pulse'; data: { stunned_ids: string[] } }
   | { name: 'player_hit'; data: { by: 'shade'; flames: number; dropped: number } }
   | { name: 'player_hit'; data: { by: 'fall'; flames: number; dropped: number; lost: number } }
@@ -98,6 +107,6 @@ export type GameEvent =
   | { name: 'drifter_drop'; data: { drifter_id: string; amount: number } }
   | { name: 'paused'; data: Record<string, never> }
   | { name: 'resumed'; data: Record<string, never> }
-  | { name: 'game_over'; data: { result: 'won' | 'lost'; reason: 'all_lit' | 'dawn' | 'no_flames' } };
+  | { name: 'game_over'; data: { result: 'won' | 'lost'; reason: 'dawn_survived' | 'dawn' | 'no_flames' } };
 
 export type TimedEvent = GameEvent & { tick: number };

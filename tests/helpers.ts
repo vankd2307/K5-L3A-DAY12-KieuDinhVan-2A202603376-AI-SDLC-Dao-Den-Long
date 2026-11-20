@@ -12,8 +12,8 @@ export interface Snap extends Line {
   sim_tick: number;
   state: string;
   time_left_s: number;
-  player: { pos: number[]; vel: number[]; grounded: boolean; invuln: boolean; flames: number; carried: number; dash_cd_s: number; pulse_cd_s: number; charm_s: number };
-  lanterns: Array<{ id: string; pos: number[]; lit: boolean; deposited: number }>;
+  player: { pos: number[]; vel: number[]; grounded: boolean; invuln: boolean; flames: number; carried: number; capacity: number; dash_cd_s: number; pulse_cd_s: number; charm_s: number };
+  lanterns: Array<{ id: string; pos: number[]; lit: boolean; deposited: number; fuel: number; ever_lit: boolean; relit_count: number }>;
   shades: Array<{ id: string; pos: number[]; state: string }>;
   motes: Array<{ id: string; pos: number[]; kind: string; ttl_s: number | null }>;
   motes_active: number;

@@ -1,5 +1,18 @@
 # Giả định
 
+## Phase 3 (Ticket-03 "Đèn cạn dầu", Test Contract v1.2)
+
+Quyết định thiết kế chính: [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md). Thay đổi phá vỡ tương thích: [CHANGELOG](../CHANGELOG.md).
+
+Ticket-03 **thay** giả định Phase 2 mục 2 (`wander` lượn ngẫu nhiên). Những chỗ ticket chưa quy định và cách tôi chọn:
+1. **`wander` khi không có đèn yếu** đi về đèn tắt gần nhất tới khi cách 3 m, rồi lượn ngẫu nhiên quanh đó. Khi không có đèn tắt nào thì lượn ngẫu nhiên như trước. Phát hiện Mây ở 12 m vẫn ưu tiên chuyển sang `chase`.
+2. **Bóng Mực `drain`** đứng yên, không gây sát thương (chỉ `chase`/`wander` mới gây). Bị Tỏa Sáng thì bỏ mục tiêu đèn.
+3. **`fuel_drain`** phát theo từng con, mỗi 60 tick kể từ lúc con đó bắt đầu hút; `fuel` trong sự kiện làm tròn 1 chữ số thập phân.
+4. **Khóa điểm mới** nằm trong `tuning.score` (`per_relight`, `per_stun_drain`, `per_lantern_at_dawn`); `per_second_left = 0` vì thưởng thời gian bị bỏ.
+5. **Scenario**: đèn `lit: true` không ghi `ever_lit` thì coi là `ever_lit: true`; `fuel` của đèn tắt bị bỏ qua (luôn 0). `fuel` ngoài [0, 100] → exit 2. `target_lantern_id` không tồn tại → exit 2.
+6. **Hình dạng đèn tắt** (xẹp 20%, giấy rách) và nhấp nháy khi dầu thấp **luôn bật**, không chỉ trong chế độ mù màu, vì chúng không làm hỏng gì. Chế độ mù màu chỉ đổi màu viền/mắt Bóng Mực và màu cảnh báo (đồng hồ ≤ 30 s chuyển trắng kèm ⚠).
+7. **`end.score` khi thua** vẫn là điểm đã tích được trong đêm (như Phase 2), không có thưởng bình minh.
+
 ## Phase 2 (Ticket-02, Test Contract v1.1)
 
 Ticket-02 **thay toàn bộ** số tự chọn ở Phase 1 bằng số chuẩn (xem `src/core/tuning.ts`, `src/core/maps.ts`). Những giả định Phase 1 bị ticket thay thế: vùng an toàn cho cả đèn chưa thắp (nay chỉ đèn đã sáng), đom đóm rơi mất hẳn (nay rơi ra đất 480 tick), điểm cộng khi nhặt (nay cộng khi nạp), mép đảo là tường (nay rơi xuống biển mây).

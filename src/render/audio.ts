@@ -2,7 +2,7 @@
  * All sound is synthesised with WebAudio at runtime (no external audio files, nothing to license).
  */
 export type Sfx =
-  | 'pickup' | 'lit' | 'pulse' | 'hit' | 'jump' | 'dash' | 'win' | 'lose' | 'spawn' | 'tick' | 'wind' | 'charm' | 'steal' | 'click';
+  | 'pickup' | 'out' | 'lit' | 'pulse' | 'hit' | 'jump' | 'dash' | 'win' | 'lose' | 'spawn' | 'tick' | 'wind' | 'charm' | 'steal' | 'click';
 
 const PENTA = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33];
 
@@ -73,6 +73,7 @@ export class Sound {
       case 'wind': return this.noise(2.2, 700, 0.18, true);
       case 'steal': return this.tone(700, 0.3, 'triangle', 0.18, 300);
       case 'click': return this.tone(600, 0.05, 'sine', 0.12);
+      case 'out': return this.tone(330, 0.7, 'sine', 0.22, 110);
       case 'win': [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.6, 'triangle', 0.25, undefined, undefined, i * 0.15)); return;
       case 'lose': [392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.6, 'sine', 0.25, undefined, undefined, i * 0.2)); return;
     }

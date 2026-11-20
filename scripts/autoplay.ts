@@ -123,15 +123,21 @@ const LIMIT = 60 * (game.durationS + 5);
 
 for (let k = 0; k < LIMIT && !game.over; k++) {
   const p = game.player;
-  const target = cheapest(game.lanterns.filter((l) => !l.lit), (l) => l.pos)!;
-  const need = Math.min(t.lantern_cost - target.deposited, t.carry_capacity);
+  // Ticket-03: keep lanterns burning. Light unlit ones first, else top up the emptiest (< 60 fuel).
+  const unlit = game.lanterns.filter((l) => !l.lit);
+  const low = game.lanterns.filter((l) => l.lit && game.fuelOf(l) < 60).sort((a, b) => a.fuelUnits - b.fuelUnits);
+  const target = cheapest(unlit, (l) => l.pos) ?? low[0];
+  const need = !target ? Infinity : target.lit
+    ? Math.ceil((t.fuel_max - game.fuelOf(target)) / t.fuel_per_mote)
+    : game.lightCost(target) - target.deposited;
   const dangerous = game.shades.filter((s) => (s.state === 'chase' || s.state === 'wander') && Math.abs(s.pos[1] - p.pos[1]) < 2);
   const closest = Math.min(Infinity, ...dangerous.map((s) => hdist(s.pos, p.pos)));
 
   let goal: Vec3 | undefined;
   let interact = false;
-  if (p.carried >= need || game.motes.length === 0) {
-    if (game.lanternInReach()) interact = k % 2 === 0;
+  const delivering = !!target && (p.carried >= Math.min(need + t.pulse_cost, game.capacity) || game.motes.length === 0);
+  if (delivering) {
+    if (game.lanternInReach() === target) interact = k % 2 === 0;
     else goal = target.pos;
   } else goal = cheapest(game.motes, (m) => m.pos)?.pos;
 
@@ -156,7 +162,7 @@ for (let k = 0; k < LIMIT && !game.over; k++) {
     const len = Math.hypot(dx, dz) || 1;
     [dx, dz] = [dx / len, dz / len];
     // steer away from nearby shades (not while walking a ramp/bridge/pad segment)
-    if (plan.path.length === 0 || night === 1) {
+    if (!delivering && (plan.path.length === 0 || night === 1)) {
       for (const sh of dangerous) {
         const d = hdist(sh.pos, p.pos);
         if (d > 7 || d < 1e-6) continue;
@@ -169,7 +175,8 @@ for (let k = 0; k < LIMIT && !game.over; k++) {
     move = [dx / l2, dz / l2]; // yaw 0: move [x, z] == world [x, z]
   }
   const dash = closest < 2.5 && game.dashReady() && k % 2 === 0;
-  const pulse = closest < 1.8 && !game.dashReady() && game.pulseReady() && k % 2 === 0;
+  // clear the way to the lantern; otherwise pulse only as a last resort
+  const pulse = (delivering ? closest < 4.5 : closest < 1.8 && !game.dashReady()) && game.pulseReady() && k % 2 === 0;
   const input: FrameInput = { move, camYawDeg: 0, jump: false, interact, pulse, dash, pause: false };
 
   const f: InputFrame = { tick: k };

@@ -7,10 +7,11 @@ const $ = (id: string) => document.getElementById(id)!;
 export class Hud {
   private flash = 0;
   private cells: HTMLElement[] = [];
+  colorblind = false;
 
   constructor() {
     const bar = $('motebar');
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       const c = document.createElement('i');
       bar.appendChild(c);
       this.cells.push(c);
@@ -33,16 +34,23 @@ export class Hud {
     // top-centre timer, red + blinking at <= 30 s
     const s = Math.ceil(game.timeLeftS);
     const timer = $('timer');
-    timer.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    const mmss = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    timer.textContent = s <= 30 && this.colorblind ? `⚠ ${mmss}` : mmss;
     timer.classList.toggle('danger', s <= 30);
     timer.classList.toggle('blink', s <= 30 && Math.floor(time * 2) % 2 === 0);
     // top-right lanterns k/n + score
     const lit = game.lanterns.filter((l) => l.lit).length;
     $('lit').textContent = `${lit}/${game.lanterns.length}`;
+    $('need').textContent = `cần ${game.litNeeded} lúc bình minh`;
     $('score').textContent = String(game.score);
     $('nightname').textContent = `Đêm ${game.night} · ${game.map.name}`;
     // bottom-centre mote bar (10 cells)
-    this.cells.forEach((c, i) => c.classList.toggle('full', i < p.carried));
+    const cap = game.capacity;
+    this.cells.forEach((c, i) => {
+      c.style.display = i < cap ? '' : 'none';
+      c.classList.toggle('full', i < p.carried);
+    });
+    $('carry').textContent = `${p.carried} / ${cap}`;
     // bottom-right cooldown icons
     const cd = (el: HTMLElement, left: number, total: number, ready: boolean) => {
       const frac = total > 0 ? left / total : 0;
@@ -54,7 +62,11 @@ export class Hud {
     $('charm').textContent = p.charmTicks > 0 ? `Bùa Gió ${Math.ceil(p.charmTicks / TICK_RATE)}s` : '';
     // interact prompt
     const near = game.lanternInReach();
-    $('hint').textContent = near ? `E — Nạp ánh sáng (${near.deposited}/${t.lantern_cost})` : '';
+    $('hint').textContent = !near
+      ? ''
+      : near.lit
+        ? `E — Châm dầu (${Math.floor(game.fuelOf(near))}/${t.fuel_max})`
+        : `E — ${near.everLit ? 'Thắp lại' : 'Nạp ánh sáng'} (${near.deposited}/${game.lightCost(near)})`;
     // wind warning
     $('windwarn').textContent = game.windWarning() > 0 ? 'Gió sắp nổi!' : game.wind.active ? 'Gió mạnh' : '';
     // arrow to nearest unlit lantern when it is off-screen

@@ -12,6 +12,7 @@ const INTRO: Record<1 | 2 | 3, string[]> = {
     'Ông Đăng: "Mây à, sương đen đã nuốt hết ánh sáng của Đảo Bến rồi."',
     '"Đom đóm vẫn còn lẩn trong cỏ. Gom chúng lại, mang về thắp năm Đèn Lồng Lớn."',
     '"Bóng Mực sợ đèn. Khi bị đuổi, hãy tỏa sáng, nhưng nhớ là mỗi lần như vậy tốn đom đóm đấy."',
+    '"Đèn cạn dầu thì tắt, Bóng Mực còn hút dầu đèn yếu. Giữ ít nhất 3 đèn cháy tới bình minh nhé."',
   ],
   2: [
     'Ông Đăng: "Đảo Cau có hai hòn, nối nhau bằng cây cầu tre cũ. Bước cho cẩn thận."',
@@ -21,7 +22,7 @@ const INTRO: Record<1 | 2 | 3, string[]> = {
   3: [
     'Ông Đăng: "Đảo Chuông là đêm cuối. Tháp chuông ở đỉnh đảo, có ba tầng."',
     '"Leo dốc lên tầng giữa, rồi nhờ bục nhảy lên tới đỉnh. Gió mạnh nổi lên liên tục, nghe tiếng lá bay thì đứng vững."',
-    '"Thắp đủ bảy đèn, bình minh sẽ trở về."',
+    '"Giữ năm trong bảy đèn cháy tới khi trời sáng, bình minh sẽ trở về."',
   ],
 };
 
@@ -86,7 +87,7 @@ function finishNight(): void {
   $('result-title').textContent = won ? `Đêm ${night} đã sáng!` : 'Ánh sáng đã tắt...';
   $('result-text').textContent = won
     ? `Điểm đêm này: ${game.score} · Tổng: ${total}`
-    : game.player.flames <= 0 ? 'Mây đã hết Ngọn Lửa.' : 'Trời sáng trước khi kịp thắp hết đèn.';
+    : game.player.flames <= 0 ? 'Mây đã hết Ngọn Lửa.' : `Trời sáng nhưng chỉ còn ${game.lanterns.filter((l) => l.lit).length}/${game.litNeeded} đèn cần thiết.`;
   $('btn-next').style.display = won ? '' : 'none';
   $('btn-retry').style.display = won ? 'none' : '';
   show('result');
@@ -128,6 +129,21 @@ on('btn-settings-back', () => settingsBack());
 
 const vol = $('set-volume') as HTMLInputElement;
 const sens = $('set-sens') as HTMLInputElement;
+const cb = $('set-cb') as HTMLInputElement;
+const applyColorblind = () => {
+  document.body.classList.toggle('cb', settings.colorblind);
+  view.setColorblind(settings.colorblind);
+  hud.colorblind = settings.colorblind;
+};
+// &cb turns the colour-blind palette on for this page load only (screenshots), without saving it
+if (new URLSearchParams(location.search).has('cb')) settings.colorblind = true;
+cb.checked = settings.colorblind;
+applyColorblind();
+cb.addEventListener('change', () => {
+  settings.colorblind = cb.checked;
+  applyColorblind();
+  saveSettings(settings);
+});
 vol.value = String(settings.volume);
 sens.value = String(settings.sensitivity);
 vol.addEventListener('input', () => {
@@ -144,7 +160,7 @@ window.addEventListener('keydown', () => sound.unlock(), { once: true });
 // ------------------------------------------------------------ sound from events
 const SFX: Partial<Record<TimedEvent['name'], Sfx>> = {
   mote_picked: 'pickup', lantern_lit: 'lit', pulse: 'pulse', player_hit: 'hit', dash: 'dash',
-  shade_spawned: 'spawn', charm_picked: 'charm', drifter_steal: 'steal',
+  shade_spawned: 'spawn', charm_picked: 'charm', drifter_steal: 'steal', refuel: 'pickup', lantern_out: 'out',
 };
 function playEvents(events: TimedEvent[]): void {
   for (const e of events) {

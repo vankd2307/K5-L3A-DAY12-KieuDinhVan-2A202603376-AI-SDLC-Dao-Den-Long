@@ -13,6 +13,7 @@ export const C = {
   moteHalo: 0xffe58a,
   shadeBody: 0x120a1a,
   shadeRim: 0x7a3cff,
+  shadeRimCb: 0x00b3ff, // colour-blind friendly palette (Ticket-03)
   shadeStun: 0x3a3450,
   coat: 0xe8e2d0,
   scarf: 0xc8102e,

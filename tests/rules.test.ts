@@ -70,7 +70,8 @@ describe('P4 motes', () => {
 
 describe('P5 lanterns', () => {
   const atL1 = { ...QUIET, player: { pos: [0, 0, 23.5], carried: 6 } };
-  it('deposits min(carried, missing) several times; lights at 10; +10/mote, +100/lantern', () => {
+  // Ticket-03: +5 per deposited mote (was +10)
+  it('deposits min(carried, missing) several times; lights at 10; +5/mote, +100/lantern', () => {
     const r = run({
       ticks: 10, scenario: atL1,
       frames: [{ tick: 0, interact: true }, { tick: 1, interact: false }],
@@ -80,7 +81,7 @@ describe('P5 lanterns', () => {
     expect(r2.events('deposit')[0]!.data).toEqual({ lantern_id: 'L1', amount: 4, deposited: 10 });
     expect(r2.events('lantern_lit')).toHaveLength(1);
     expect(r2.last.player.carried).toBe(5);
-    expect(r2.end.score).toBe(4 * 10 + 100);
+    expect(r2.end.score).toBe(4 * 5 + 100);
   });
   it('interact radius is 2.0; ties go to the smaller id', () => {
     expect(run({ ticks: 2, scenario: { ...QUIET, player: { pos: [0, 0, 22.99], carried: 3 } }, frames: [{ tick: 0, interact: true }] }).events('deposit')).toHaveLength(0);
@@ -207,18 +208,10 @@ describe('P10 falling off', () => {
   });
 });
 
-describe('P11 win / lose', () => {
-  const allButL1 = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
-  it('lighting the last lantern wins; bonus floor(s left) x2 + 50 x flames', () => {
-    const r = run({ ticks: 10, scenario: { ...QUIET, player: { pos: [0, 0, 23.5], carried: 10 }, lanterns: allButL1 }, frames: [{ tick: 0, interact: true }] });
-    expect(r.events('game_over')[0]).toMatchObject({ tick: 1, data: { result: 'won', reason: 'all_lit' } });
-    expect(r.end).toMatchObject({ ticks: 1, state: 'won', score: 100 + 100 + 299 * 2 + 150 });
-  });
-  it('winning on the exact time-out tick still wins', () => {
-    const r = run({ ticks: 100, scenario: { ...QUIET, time_left_s: 1 / 60, player: { pos: [0, 0, 23.5], carried: 10 }, lanterns: allButL1 }, frames: [{ tick: 0, interact: true }] });
-    expect(r.events('game_over')[0]!.data).toEqual({ result: 'won', reason: 'all_lit' });
-  });
-  it('dawn when time runs out', () => {
+// P11 (Ticket-02 "win as soon as all lanterns are lit" + time bonus) was REPLACED by Ticket-03:
+// the 2 early-win tests were removed; the new dawn rules are tested in tests/fuel.test.ts (F-WIN).
+describe('P11 dawn (still valid after Ticket-03)', () => {
+  it('dawn with no lit lanterns loses', () => {
     const r = run({ ticks: 1000, scenario: { ...QUIET, time_left_s: 2 } });
     expect(r.events('game_over')[0]).toMatchObject({ tick: 120, data: { result: 'lost', reason: 'dawn' } });
   });

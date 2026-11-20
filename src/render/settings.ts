@@ -1,10 +1,11 @@
 export interface Settings {
   volume: number; // 0..1
   sensitivity: number; // 0.2..2, multiplies mouse yaw speed
+  colorblind: boolean; // Ticket-03 "Bảng màu dễ phân biệt"
 }
 
 const KEY = 'dao-den-long.settings';
-const DEFAULTS: Settings = { volume: 0.7, sensitivity: 1 };
+const DEFAULTS: Settings = { volume: 0.7, sensitivity: 1, colorblind: false };
 const clamp = (v: unknown, lo: number, hi: number, d: number) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d;
 
@@ -15,6 +16,7 @@ export function loadSettings(): Settings {
     return {
       volume: clamp(raw.volume, 0, 1, DEFAULTS.volume),
       sensitivity: clamp(raw.sensitivity, 0.2, 2, DEFAULTS.sensitivity),
+      colorblind: raw.colorblind === true,
     };
   } catch {
     return { ...DEFAULTS };

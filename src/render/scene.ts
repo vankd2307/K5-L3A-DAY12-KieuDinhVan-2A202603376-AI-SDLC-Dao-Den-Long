@@ -4,7 +4,7 @@ import { ambientFor, C } from './palette';
 
 type StdMesh = THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
 
-interface LanternObj { group: THREE.Group; lamp: StdMesh; light: THREE.PointLight; glow: number }
+interface LanternObj { group: THREE.Group; lamp: StdMesh; light: THREE.PointLight; glow: number; bar: THREE.Group; fill: THREE.Mesh; tear: THREE.Mesh }
 interface ShadeObj { group: THREE.Group; body: StdMesh; age: number }
 interface DrifterObj { group: THREE.Group; strips: THREE.Mesh[] }
 
@@ -34,6 +34,14 @@ export class SceneView {
   private pulseT = 1;
   private leaves: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
   private heading = 0;
+  private rimMat = new THREE.MeshBasicMaterial({ color: C.shadeRim, side: THREE.BackSide });
+  private eyeMat = new THREE.MeshBasicMaterial({ color: 0xd9b3ff });
+
+  /** Ticket-03 colour-blind palette: shade rim + eyes #7A3CFF -> #00B3FF. */
+  setColorblind(on: boolean): void {
+    this.rimMat.color.setHex(on ? C.shadeRimCb : C.shadeRim);
+    this.eyeMat.color.setHex(on ? 0xb3ecff : 0xd9b3ff);
+  }
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -102,14 +110,26 @@ export class SceneView {
 
     // lanterns + ambient (0.15 + 0.55 * lit/total)
     let lit = 0;
+    const blinkOff = Math.floor(time * 2) % 2 === 1; // 1 Hz
     game.lanterns.forEach((l, i) => {
       const o = this.lanterns[i];
       if (!o) return;
       if (l.lit) lit++;
       o.group.position.set(l.pos[0], l.pos[1], l.pos[2]);
+      // shape cues that work without colour: unlit = squashed 20% + torn paper
+      o.lamp.scale.y = l.lit ? 1 : 0.8;
+      o.tear.visible = !l.lit;
+      // fuel bar on lit lanterns, blinking at 1 Hz below 30
+      const fuel = game.fuelOf(l);
+      const low = l.lit && game.isWeak(l);
+      o.bar.visible = l.lit && !(low && blinkOff);
+      o.fill.scale.x = Math.max(0.001, fuel / game.tuning.fuel_max);
+      o.fill.position.x = -0.6 * (1 - fuel / game.tuning.fuel_max);
+      (o.fill.material as THREE.MeshBasicMaterial).color.setHex(low ? C.danger : C.lit);
+      o.bar.quaternion.copy(this.camera.quaternion);
       const target = l.lit ? 1 : (l.deposited / game.tuning.lantern_cost) * 0.3;
       o.glow += (target - o.glow) * Math.min(1, dt * 2);
-      o.light.intensity = o.glow * 40;
+      o.light.intensity = o.glow * 40 * (low && blinkOff ? 0.25 : 1);
       o.lamp.material.color.setHex(l.lit ? C.lit : C.off);
       o.lamp.material.emissive.setHex(C.lit); // warm orange, not washed-out white
       o.lamp.material.emissiveIntensity = l.lit ? 0.75 : o.glow * 1.5;
@@ -359,10 +379,19 @@ export class SceneView {
     lamp.position.set(0, 2.55, 0.9);
     const light = new THREE.PointLight(C.lit, 0, 26, 1.4);
     light.position.copy(lamp.position);
-    group.add(post, arm, lamp, light);
+    const tear = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.5), new THREE.MeshBasicMaterial({ color: 0x111111, side: THREE.DoubleSide }));
+    tear.position.set(0.31, 2.5, 0.9);
+    tear.rotation.set(0, Math.PI / 2, 0.5);
+    const bar = new THREE.Group();
+    bar.position.set(0, 3.7, 0.9);
+    const back = new THREE.Mesh(new THREE.PlaneGeometry(1.24, 0.18), new THREE.MeshBasicMaterial({ color: 0x111122 }));
+    const fill = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.12), new THREE.MeshBasicMaterial({ color: C.lit }));
+    fill.position.z = 0.01;
+    bar.add(back, fill);
+    group.add(post, arm, lamp, light, tear, bar);
     group.position.set(pos[0]!, pos[1]!, pos[2]!);
     this.dynamic.add(group);
-    return { group, lamp, light, glow: 0 };
+    return { lamp, light, group, glow: 0, bar, fill, tear };
   }
 
   private makeMote(): THREE.Group {
@@ -377,11 +406,10 @@ export class SceneView {
     const group = new THREE.Group();
     const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12), std(C.shadeBody, { emissive: 0x1a0030 })) as StdMesh;
     body.scale.y = 1.25;
-    const rim = new THREE.Mesh(new THREE.SphereGeometry(0.78, 16, 12), new THREE.MeshBasicMaterial({ color: C.shadeRim, side: THREE.BackSide }));
+    const rim = new THREE.Mesh(new THREE.SphereGeometry(0.78, 16, 12), this.rimMat);
     rim.scale.y = 1.25;
-    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xd9b3ff });
     for (const sx of [-0.22, 0.22]) {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), eyeMat);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), this.eyeMat);
       eye.position.set(sx, 0.2, 0.62);
       group.add(eye);
     }

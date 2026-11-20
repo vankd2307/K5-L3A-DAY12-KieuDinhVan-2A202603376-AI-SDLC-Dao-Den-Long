@@ -6,23 +6,27 @@ import { QUIET, run } from './helpers';
 
 const root = join(__dirname, '..');
 
-describe('game.contract.json (v1.1)', () => {
+describe('game.contract.json (v1.2)', () => {
   const c = JSON.parse(readFileSync(join(root, 'game.contract.json'), 'utf8'));
-  it('declares contract 1.1 and the commands', () => {
-    expect(c.contract_version).toBe('1.1');
+  // Ticket-03: contract bumped 1.1 -> 1.2
+  it('declares contract 1.2 and the commands', () => {
+    expect(c.contract_version).toBe('1.2');
     for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd']) expect(typeof c[k]).toBe('string');
   });
   it('tuning mirrors the numbers the game uses', () => {
     expect(c.tuning).toEqual(TUNING);
   });
-  it('tuning equals the Ticket-02 standard table', () => {
+  // Ticket-03 replaced durations (240/270/300), added fuel keys and the new score table
+  it('tuning equals the Ticket-02 + Ticket-03 standard tables', () => {
     expect(c.tuning).toMatchObject({
       player_speed: 6, carry_capacity: 10, lantern_cost: 10, lantern_count_night1: 5, pickup_radius: 1,
-      interact_radius: 2, pulse_cost: 3, pulse_radius: 5, night1_duration_s: 300, night2_duration_s: 330,
-      night3_duration_s: 360, flames: 3, invuln_s: 1.5, hit_drop_ratio: 0.5, pulse_stun_s: 2, pulse_push_m: 4,
+      interact_radius: 2, pulse_cost: 3, pulse_radius: 5, night1_duration_s: 240, night2_duration_s: 270,
+      night3_duration_s: 300, flames: 3,
+      fuel_max: 100, fuel_decay_per_s: 1, fuel_per_mote: 10, relight_cost: 5, win_ratio: 0.6, drain_per_s: 5,
+      low_fuel_threshold: 30, capacity_max: 20, invuln_s: 1.5, hit_drop_ratio: 0.5, pulse_stun_s: 2, pulse_push_m: 4,
       pulse_cooldown_s: 3, safe_radius: 6, shade_speed: 4, shade_hit_radius: 1, dash_speed: 14,
       dash_duration_s: 0.2, dash_cooldown_s: 1.5, fall_enabled: true,
-      score: { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 },
+      score: { per_mote: 5, per_lantern: 100, per_relight: 40, per_stun: 5, per_stun_drain: 15, per_second_left: 0, per_flame_left: 50 },
     });
   });
 });

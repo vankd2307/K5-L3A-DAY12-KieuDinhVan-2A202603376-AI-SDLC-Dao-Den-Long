@@ -15,6 +15,9 @@
       .tc { top: 12px; left: 50%; transform: translateX(-50%); text-align: center; }
       #timer { font-size: 34px; font-weight: 700; letter-spacing: 1px; }
       #timer.danger { color: var(--danger); }
+      body.cb { --danger: #FFFFFF; }
+      #need { font-size: 12px; opacity: .8; }
+      #carry { font-size: 14px; margin-top: 4px; }
       #timer.blink { opacity: .35; }
       #nightname { font-size: 13px; opacity: .8; }
       .tr { top: 14px; right: 18px; text-align: right; font-size: 18px; line-height: 1.5; }
@@ -51,15 +54,15 @@
     <div id="hud">
       <div class="tl" id="flames"></div>
       <div class="tc"><div id="timer">05:00</div><div id="nightname"></div></div>
-      <div class="tr">Đèn <b id="lit">0/5</b><br />Điểm <b id="score">0</b></div>
-      <div class="bc"><div id="windwarn"></div><div id="hint"></div><div id="motebar"></div></div>
+      <div class="tr">Đèn <b id="lit">0/5</b><div id="need"></div>Điểm <b id="score">0</b></div>
+      <div class="bc"><div id="windwarn"></div><div id="hint"></div><div id="motebar"></div><div id="carry"></div></div>
       <div class="br"><div id="charm"></div><div class="cd" id="cd-dash">Lướt<br />Shift</div><div class="cd" id="cd-pulse">Tỏa sáng<br />F</div></div>
       <div id="arrow">➤</div>
     </div>
 
     <div class="screen" id="menu"><div class="card">
       <h1>Đảo Đèn Lồng</h1>
-      <p>Ba đêm, ba hòn đảo. Giúp Mây thắp lại những Đèn Lồng Lớn.</p>
+      <p>Ba đêm, ba hòn đảo. Giúp Mây giữ những Đèn Lồng Lớn cháy sáng tới bình minh.</p>
       <button id="btn-start">Bắt đầu</button><button id="btn-settings">Cài đặt</button>
       <div class="keys">WASD: đi · Space: nhảy · Shift/Q: lướt · E: nạp đèn · F: tỏa sáng · Esc/P: tạm dừng · kéo chuột hoặc ←/→: xoay camera</div>
     </div></div>
@@ -87,6 +90,7 @@
       <h2>Cài đặt</h2>
       <label>Âm lượng <input id="set-volume" type="range" min="0" max="1" step="0.05" /></label>
       <label>Độ nhạy chuột <input id="set-sens" type="range" min="0.2" max="2" step="0.1" /></label>
+      <label><input id="set-cb" type="checkbox" /> Bảng màu dễ phân biệt</label>
       <button id="btn-settings-back">Quay lại</button>
     </div></div>
 
