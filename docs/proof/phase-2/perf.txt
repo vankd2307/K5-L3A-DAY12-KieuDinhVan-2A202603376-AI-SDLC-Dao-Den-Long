@@ -1,0 +1,4 @@
+Máy: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz, Node v22.21.0
+night 1: {"type":"end","ticks":18000,"state":"lost","score":0} in 402 ms (incl. node+tsx startup)
+night 2: {"type":"end","ticks":19800,"state":"lost","score":0} in 426 ms (incl. node+tsx startup)
+night 3: {"type":"end","ticks":21600,"state":"lost","score":0} in 464 ms (incl. node+tsx startup)

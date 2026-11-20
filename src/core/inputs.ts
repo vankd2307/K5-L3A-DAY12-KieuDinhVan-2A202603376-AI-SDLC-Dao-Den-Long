@@ -9,9 +9,10 @@ export interface InputFrame {
   interact?: boolean;
   pulse?: boolean;
   dash?: boolean;
+  pause?: boolean;
 }
 
-const BUTTONS = ['jump', 'interact', 'pulse', 'dash'] as const;
+const BUTTONS = ['jump', 'interact', 'pulse', 'dash', 'pause'] as const;
 
 function validateFrame(f: unknown, i: number): InputFrame {
   const where = `inputs.frames[${i}]`;
@@ -60,7 +61,7 @@ export function parseInputs(text: string): InputFrame[] {
 /** Resolves held values tick by tick. Call at(k) with k = 0, 1, 2, ... in order. */
 export class InputTimeline {
   private i = 0;
-  private cur: FrameInput = { move: [0, 0], camYawDeg: 0, jump: false, interact: false, pulse: false };
+  private cur: FrameInput = { move: [0, 0], camYawDeg: 0, jump: false, interact: false, pulse: false, dash: false, pause: false };
 
   constructor(private readonly frames: InputFrame[]) {}
 
@@ -73,6 +74,8 @@ export class InputTimeline {
         jump: f.jump ?? this.cur.jump,
         interact: f.interact ?? this.cur.interact,
         pulse: f.pulse ?? this.cur.pulse,
+        dash: f.dash ?? this.cur.dash,
+        pause: f.pause ?? this.cur.pause,
       };
     }
     return this.cur;

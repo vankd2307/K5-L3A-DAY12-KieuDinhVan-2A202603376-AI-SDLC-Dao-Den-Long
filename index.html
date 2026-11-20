@@ -5,35 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đảo Đèn Lồng</title>
     <style>
-      html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b1f; font-family: system-ui, sans-serif; }
+      :root { --text: #F5F1E6; --gold: #F2C14E; --danger: #FF5A5F; --lit: #FFB347; --panel: rgba(14, 20, 48, .72); }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0E1430; font-family: system-ui, sans-serif; color: var(--text); }
       #app canvas { display: block; }
-      #hud { position: fixed; top: 12px; left: 12px; display: grid; grid-template-columns: auto auto; gap: 4px 14px;
-             padding: 10px 14px; border-radius: 10px; background: rgba(20, 12, 40, .55); color: #ffe9b8; font-size: 15px; pointer-events: none; }
-      #hud b { color: #ffb347; font-weight: 600; }
-      #pulse { position: fixed; bottom: 16px; left: 12px; color: #ffd27a; font-size: 14px; }
-      #pulse.dim { color: #8f86b0; }
-      #hint { position: fixed; bottom: 60px; width: 100%; text-align: center; color: #ffe9b8; font-size: 18px; text-shadow: 0 0 8px #ff9a3d; pointer-events: none; }
-      #keys { position: fixed; bottom: 16px; right: 12px; color: #a99fd0; font-size: 13px; text-align: right; }
-      #hit { position: fixed; inset: 0; background: radial-gradient(transparent 50%, #5a1a8a); opacity: 0; pointer-events: none; }
-      #overlay { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10, 6, 25, .6); color: #ffe9b8; text-align: center; }
-      #overlay.show { display: grid; }
-      #overlay h1 { font-size: 42px; margin: 0 0 8px; color: #ffb347; }
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      .tl, .tc, .tr, .bc, .br { position: fixed; }
+      .tl { top: 14px; left: 16px; font-size: 26px; }
+      .tl .off { filter: grayscale(1) brightness(.4); }
+      .tc { top: 12px; left: 50%; transform: translateX(-50%); text-align: center; }
+      #timer { font-size: 34px; font-weight: 700; letter-spacing: 1px; }
+      #timer.danger { color: var(--danger); }
+      #timer.blink { opacity: .35; }
+      #nightname { font-size: 13px; opacity: .8; }
+      .tr { top: 14px; right: 18px; text-align: right; font-size: 18px; line-height: 1.5; }
+      .tr b { color: var(--gold); font-size: 22px; }
+      .bc { bottom: 18px; left: 50%; transform: translateX(-50%); text-align: center; }
+      #motebar { display: flex; gap: 5px; justify-content: center; }
+      #motebar i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255, 229, 138, .5); background: rgba(0, 0, 0, .3); }
+      #motebar i.full { background: radial-gradient(#FFF6C2 30%, #FFE58A 70%); box-shadow: 0 0 10px #FFE58A; }
+      #hint { margin-bottom: 10px; font-size: 20px; color: var(--text); text-shadow: 0 0 10px var(--lit); min-height: 26px; }
+      #windwarn { font-size: 16px; color: #9cc27a; min-height: 20px; }
+      .br { bottom: 18px; right: 18px; display: flex; gap: 12px; align-items: flex-end; }
+      .cd { --p: 0; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; text-align: center;
+            background: conic-gradient(rgba(14, 20, 48, .85) calc(var(--p) * 360deg), rgba(255, 179, 71, .35) 0); border: 2px solid rgba(255, 255, 255, .25); }
+      .cd.ready { border-color: var(--lit); box-shadow: 0 0 10px var(--lit); }
+      #charm { color: #ff8a8a; font-size: 14px; }
+      #arrow { position: fixed; font-size: 34px; color: var(--lit); text-shadow: 0 0 8px var(--lit); display: none; }
+      #hit { position: fixed; inset: 0; background: radial-gradient(transparent 50%, #7A3CFF); opacity: 0; pointer-events: none; }
+      .screen { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10, 12, 32, .62); text-align: center; }
+      .screen.show { display: grid; }
+      .card { background: var(--panel); padding: 28px 36px; border-radius: 16px; max-width: 560px; border: 1px solid rgba(242, 193, 78, .35); }
+      .card h1 { color: var(--lit); margin: 0 0 10px; font-size: 40px; }
+      .card h2 { color: var(--gold); margin: 0 0 8px; }
+      .card p { line-height: 1.5; }
+      button { font: inherit; font-size: 18px; margin: 6px; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--gold); background: #2a2350; color: var(--text); cursor: pointer; }
+      button:hover { background: #3a3170; }
+      label { display: block; margin: 14px 0; text-align: left; }
+      input[type=range] { width: 100%; }
+      .keys { font-size: 13px; opacity: .75; margin-top: 14px; }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <div id="hit"></div>
     <div id="hud">
-      <span>Lửa</span><b id="flames"></b>
-      <span>Đom đóm</span><b id="carried"></b>
-      <span>Đèn đã thắp</span><b id="lit"></b>
-      <span>Bình minh sau</span><b id="time"></b>
-      <span>Điểm</span><b id="score"></b>
+      <div class="tl" id="flames"></div>
+      <div class="tc"><div id="timer">05:00</div><div id="nightname"></div></div>
+      <div class="tr">Đèn <b id="lit">0/5</b><br />Điểm <b id="score">0</b></div>
+      <div class="bc"><div id="windwarn"></div><div id="hint"></div><div id="motebar"></div></div>
+      <div class="br"><div id="charm"></div><div class="cd" id="cd-dash">Lướt<br />Shift</div><div class="cd" id="cd-pulse">Tỏa sáng<br />F</div></div>
+      <div id="arrow">➤</div>
     </div>
-    <div id="hint"></div>
-    <div id="pulse"></div>
-    <div id="keys">WASD: đi · Space: nhảy · E: nạp đèn · F/Shift: tỏa sáng<br />←/→ hoặc kéo chuột: xoay camera · R: chơi lại</div>
-    <div id="overlay"><div><h1 id="result"></h1><p id="final"></p><p>Nhấn <b>R</b> để chơi lại</p></div></div>
+
+    <div class="screen" id="menu"><div class="card">
+      <h1>Đảo Đèn Lồng</h1>
+      <p>Ba đêm, ba hòn đảo. Giúp Mây thắp lại những Đèn Lồng Lớn.</p>
+      <button id="btn-start">Bắt đầu</button><button id="btn-settings">Cài đặt</button>
+      <div class="keys">WASD: đi · Space: nhảy · Shift/Q: lướt · E: nạp đèn · F: tỏa sáng · Esc/P: tạm dừng · kéo chuột hoặc ←/→: xoay camera</div>
+    </div></div>
+
+    <div class="screen" id="intro"><div class="card">
+      <h2 id="intro-title"></h2><div id="intro-text"></div><button id="btn-go">Vào đêm</button>
+    </div></div>
+
+    <div class="screen" id="result"><div class="card">
+      <h1 id="result-title"></h1><p id="result-text"></p>
+      <button id="btn-next">Đêm tiếp theo</button><button id="btn-retry">Chơi lại Đêm</button><button id="btn-menu2">Về menu</button>
+    </div></div>
+
+    <div class="screen" id="dawn"><div class="card">
+      <h1>Bình Minh</h1><p>Ba hòn đảo đã sáng trở lại. Ông Đăng mỉm cười: "Cảm ơn con, Mây."</p>
+      <h2>Tổng điểm: <span id="dawn-score"></span></h2><button id="btn-dawn-menu">Về menu</button>
+    </div></div>
+
+    <div class="screen" id="pause"><div class="card">
+      <h2>Tạm dừng</h2>
+      <button id="btn-resume">Tiếp tục</button><button id="btn-restart">Chơi lại Đêm</button><button id="btn-pause-settings">Cài đặt</button><button id="btn-quit">Về menu</button>
+    </div></div>
+
+    <div class="screen" id="settings"><div class="card">
+      <h2>Cài đặt</h2>
+      <label>Âm lượng <input id="set-volume" type="range" min="0" max="1" step="0.05" /></label>
+      <label>Độ nhạy chuột <input id="set-sens" type="range" min="0.2" max="2" step="0.1" /></label>
+      <button id="btn-settings-back">Quay lại</button>
+    </div></div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

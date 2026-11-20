@@ -1,6 +1,6 @@
 # Đảo Đèn Lồng
 
-Game 3D góc nhìn thứ ba (TypeScript + Three.js + Vite). Bạn vào vai Mây, gom đom đóm để thắp lại 5 Đèn Lồng Lớn trên Đảo Bến, đồng thời né Bóng Mực trong sương đen.
+Game 3D góc nhìn thứ ba (TypeScript + Three.js + Vite). Mây, người giữ đèn nhỏ tuổi, đi qua 3 đêm trên 3 hòn đảo, gom đom đóm để thắp lại các Đèn Lồng Lớn và né Bóng Mực trong sương đen.
 
 > Video demo: _(thêm ở Phase 4)_
 
@@ -13,14 +13,14 @@ npm ci          # cài đặt
 npm run dev     # mở game: http://localhost:5173
 ```
 
-Các lệnh khác:
+Mở `http://localhost:5173/?night=2` để vào thẳng một đêm (dùng khi thử nghiệm hoặc quay demo).
 
 | Lệnh | Việc |
 |---|---|
-| `npm test` | Chạy toàn bộ test: luật game, Test Contract, CLI |
+| `npm test` | 60 test: luật game, Test Contract, CLI, hiệu năng |
 | `npm run typecheck` | Typecheck, kèm kiểm tra riêng rằng `src/core` không dùng DOM/three/Node |
 | `npm run build` | Build bản web tĩnh vào `dist/` |
-| `npm run autoplay -- <seed> <out.json>` | Bot tự chơi một ván và ghi ra file inputs |
+| `npm run autoplay -- <seed> <out.json> [night]` | Bot tự chơi một đêm và ghi ra file inputs |
 
 ## Điều khiển
 
@@ -28,32 +28,41 @@ Các lệnh khác:
 |---|---|
 | W A S D | Đi lại (theo hướng camera) |
 | Space | Nhảy |
+| Shift hoặc Q | Lướt (14 m/s trong 0.2 s, hồi chiêu 1.5 s) |
 | E | Nạp đom đóm vào đèn ở gần |
-| F hoặc Shift | Tỏa sáng: tốn 2 đom đóm, làm choáng và đẩy lùi Bóng Mực ở gần |
-| ← → hoặc kéo chuột | Xoay camera |
-| R | Chơi lại |
+| F | Tỏa Sáng: tốn 3 đom đóm, làm choáng và đẩy lùi Bóng Mực trong bán kính 5 m |
+| ← → hoặc kéo chuột | Xoay camera (chỉnh độ nhạy trong Cài đặt) |
+| Esc hoặc P | Tạm dừng: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu |
 
-## Luật chơi
+## Ba đêm
 
-- Đi gần đom đóm là tự nhặt, mang tối đa 10 con.
-- Đứng gần một đèn chưa thắp rồi bấm **E** để nạp. Mỗi đèn cần **5** đom đóm.
-- Bóng Mực đuổi theo Mây. Bị chạm thì mất 1 ngọn lửa (có 3 ngọn), rơi một nửa số đom đóm đang mang, và được bất tử 2 giây.
-- Bóng Mực sợ đèn: chúng không vào được vùng bán kính 5 m quanh **mọi** đèn.
-- Thắp đủ 5 đèn là **thắng**. Mất hết lửa, hoặc trời sáng (hết 300 giây) mà chưa thắp xong thì **thua**.
+| Đêm | Đảo | Đèn | Thời gian | Điểm mới |
+|---|---|---|---|---|
+| 1 | Đảo Bến | 5 | 5:00 | Đảo tròn |
+| 2 | Đảo Cau | 6 | 5:30 | Hai đảo nối bằng cầu tre, bục nhảy, Gió Lạc, Bùa Gió |
+| 3 | Đảo Chuông | 7 | 6:00 | 3 tầng, dốc, bục nhảy lên đỉnh, tháp chuông, gió mạnh |
+
+Luật chính (số chuẩn của Ticket-02):
+- Mang tối đa 10 đom đóm. Mỗi đèn cần 10, nạp nhiều lần được.
+- Bị Bóng Mực chạm: mất 1 Ngọn Lửa (có 3), rơi một nửa số đom đóm đang mang ra đất (nhặt lại được trong 8 s), rồi được bất tử 1.5 s.
+- Rơi khỏi đảo: mất 1 Ngọn Lửa và toàn bộ đom đóm, hồi sinh ở điểm xuất phát.
+- Đèn đã sáng tạo vùng an toàn bán kính 6 m mà Bóng Mực không vào được.
+- Gió Lạc chỉ để ý khi Mây mang từ 5 đom đóm trở lên, và cướp tối đa 3 con. Tỏa Sáng làm chúng bỏ chạy hoặc thả lại đồ đã cướp.
+- Bùa Gió: trong 10 s chạy 7.2 m/s và lướt không cần hồi chiêu.
 
 ### Cách tính điểm
 
 | Sự kiện | Điểm |
 |---|---|
-| Nhặt 1 đom đóm | +10 |
+| Mỗi đom đóm **nạp** vào đèn | +10 |
 | Thắp 1 đèn | +100 |
-| Mỗi Bóng Mực bị làm choáng | +25 |
-| Khi **thắng**: mỗi giây còn lại (làm tròn xuống) | +1 |
-| Khi **thắng**: mỗi ngọn lửa còn lại | +50 |
+| Mỗi Bóng Mực trúng Tỏa Sáng (mỗi lần) | +5 |
+| Khi thắng đêm: mỗi giây còn lại (làm tròn xuống) | +2 |
+| Khi thắng đêm: mỗi Ngọn Lửa còn lại | +50 |
 
-Khi thua thì giữ số điểm đã có, không cộng thưởng cuối màn.
+Tổng điểm game là tổng điểm các đêm đã thắng. Thua thì chơi lại đêm đó.
 
-## Chế độ headless (Test Contract v1.0)
+## Chế độ headless (Test Contract v1.1)
 
 Khai báo trong [game.contract.json](game.contract.json):
 
@@ -63,24 +72,26 @@ node --import tsx src/headless/cli.ts --seed 1 --night 1 --ticks 3600 --out out.
      [--scenario s.json] [--inputs i.json|i.jsonl] [--snapshot-every 60]
 ```
 
-- Mặc định `--snapshot-every` là **60**. Ngoài các snapshot định kỳ, lúc kết thúc luôn có thêm một snapshot cuối, rồi tới dòng `end`.
-- File `--inputs` nhận được cả `{ "frames": [...] }` lẫn JSONL (mỗi dòng một frame).
-- Mã thoát: `0` là thành công; `2` là sai tham số hoặc file inputs/scenario sai định dạng; `1` là lỗi khác (ví dụ không tìm thấy file).
+- `--night` nhận 1, 2, 3. Mặc định `--snapshot-every` là 60. Lúc kết thúc luôn có một snapshot cuối, rồi tới dòng `end`. Sự kiện `night_start` ghi ở tick 0.
+- File `--inputs` nhận cả `{ "frames": [...] }` lẫn JSONL.
+- Mã thoát: `0` là thành công; `2` là sai tham số hoặc file sai định dạng; `1` là lỗi khác.
 - Snapshot có thêm trường `score`, ngoài các trường contract yêu cầu.
-- Trong `tuning`, `fall_enabled` là `false` vì mép đảo là tường mềm, Mây không rơi được. Vì vậy sự kiện `player_hit` với `by: "fall"` không bao giờ xảy ra.
 
-Kiến trúc: toàn bộ luật game nằm trong [src/core/](src/core/), viết bằng TypeScript thuần, bước thời gian cố định 60 tick/giây, số ngẫu nhiên lấy từ bộ sinh có seed. Bản web ([src/render/](src/render/)) và CLI headless ([src/headless/cli.ts](src/headless/cli.ts)) cùng điều khiển một class `Game`, nên luật chơi ở hai bên giống hệt nhau.
+Kiến trúc: toàn bộ luật nằm trong [src/core/](src/core/), viết bằng TypeScript thuần, bước thời gian cố định 60 tick/giây, RNG có seed. Số chuẩn ở [tuning.ts](src/core/tuning.ts), bản đồ chuẩn ở [maps.ts](src/core/maps.ts). Bản web ([src/render/](src/render/)) và CLI cùng chạy một class `Game`. Thứ tự 12 bước của một tick nằm trong `Game.step()`.
 
 ## Bằng chứng và ghi chép
 
-- Bằng chứng Phase 1: [docs/proof/phase-1/README.md](docs/proof/phase-1/README.md)
+- Bằng chứng: [Phase 1](docs/proof/phase-1/README.md) · [Phase 2](docs/proof/phase-2/README.md)
+- Spec và tiêu chí nghiệm thu Phase 2: [docs/notes/spec-phase-2.md](docs/notes/spec-phase-2.md)
 - Giả định: [docs/notes/assumptions.md](docs/notes/assumptions.md)
 - Nhật ký dùng AI: [docs/notes/ai-log.md](docs/notes/ai-log.md)
-- Harness AI: [CLAUDE.md](CLAUDE.md)
+- Harness AI: [CLAUDE.md](CLAUDE.md), skill [.claude/skills/verify-phase/](.claude/skills/verify-phase/SKILL.md)
 
 ## Sáng tạo của tôi
 
-- Đèn lồng nhỏ treo trên nón lá của Mây sáng mạnh hơn khi mang nhiều đom đóm.
-- Bầu trời và sương ngả từ tím đen sang ấm dần theo số đèn đã thắp.
-- Biển mây, cây và sao chỉ để trang trí, nằm hoàn toàn ở phần hiển thị nên không ảnh hưởng đầu ra headless.
-- Có bot tự chơi (`npm run autoplay`) để chứng minh màn chơi thắng được.
+- Lời dẫn của Ông Đăng mở đầu mỗi đêm. Màn Bình Minh có lời cảm ơn.
+- Đèn lồng nhỏ treo trên nón lá của Mây sáng hơn khi mang nhiều đom đóm. Mây nhấp nháy trong lúc bất tử.
+- Toàn bộ âm thanh tổng hợp bằng WebAudio (nhạc ngũ cung, tiếng gió, tiếng chuông đếm ngược), không dùng file ngoài.
+- Lá bay báo trước cơn gió ở Đêm 3. Đom đóm rơi nhấp nháy trước khi tan.
+- Biển mây, cây, sao chỉ để trang trí, nằm ở phần hiển thị nên không ảnh hưởng đầu ra headless.
+- Có bot tự chơi (`npm run autoplay`) để kiểm chứng.

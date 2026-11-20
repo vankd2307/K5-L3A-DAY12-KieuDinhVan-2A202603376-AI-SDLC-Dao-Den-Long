@@ -1,5 +1,27 @@
 # Giả định
 
+## Phase 2 (Ticket-02, Test Contract v1.1)
+
+Ticket-02 **thay toàn bộ** số tự chọn ở Phase 1 bằng số chuẩn (xem `src/core/tuning.ts`, `src/core/maps.ts`). Những giả định Phase 1 bị ticket thay thế: vùng an toàn cho cả đèn chưa thắp (nay chỉ đèn đã sáng), đom đóm rơi mất hẳn (nay rơi ra đất 480 tick), điểm cộng khi nhặt (nay cộng khi nạp), mép đảo là tường (nay rơi xuống biển mây).
+
+Những chỗ Ticket-02 chưa quy định và cách tôi chọn:
+1. **Tăng tốc/dừng**: tức thời (0 s ≤ 0.1 s). Nhờ vậy vị trí tính được chính xác theo tick.
+2. **Bóng Mực `spawning`** kéo dài 60 tick, trong lúc đó không di chuyển, không gây sát thương. Sau đó chuyển `wander` (lượn 1.5 m/s tới điểm ngẫu nhiên trong 8 m). Bóng Mực trong scenario mặc định là `wander` ("hoạt động bình thường ngay"), nên nếu người chơi cách ≤ 12 m thì đuổi luôn từ tick đầu.
+3. **Chênh cao khi chạm** tính bằng `|shade.pos.y − player.pos.y| ≤ 1.5` (tâm Bóng Mực cao hơn mặt đất 1 m). Gió Lạc chỉ xét XZ ≤ 1.2 như ticket ghi.
+4. **Bóng Mực di chuyển** chỉ trên đất liền (đảo, cầu) và không xuyên tháp. Ở Đêm 3 Bóng Mực bay theo độ cao địa hình (+1 m), không bị vách chặn. Bóng Mực trong trạng thái `chase` hoặc `wander` mới gây sát thương; `recoil`, `stunned`, `spawning` và đang bị đẩy khỏi vùng an toàn thì không.
+5. **Đẩy khỏi vùng an toàn**: tuyến tính, đúng 30 tick, ra tới mép 6 m.
+6. **Lịch sinh Bóng Mực**: điểm hợp lệ là điểm cách người chơi ≥ 15 m; chọn ngẫu nhiên theo seed trong số đó. Tối đa tính trên tổng số Bóng Mực (chúng không chết).
+7. **Trần 30 đom đóm** tính cả đom đóm rơi. "Điểm trống" là điểm sinh chưa có đom đóm ngẫu nhiên nào.
+8. **Gió Lạc** sinh ở các điểm sinh Bóng Mực ("điểm sương" chưa định nghĩa), bay 1.5 m trên mặt đất, không bị đất liền giới hạn. Đồ cướp được thả "tại chỗ" trong bán kính 0.6 m; rơi xuống biển thì mất. Bị Tỏa Sáng lúc `chase` thì `flee` 240 tick. Tối đa 2 con tính trên số con chưa `removed`.
+9. **Gió mạnh**: cơn gió bắt đầu ở sim tick 1800k, kéo dài 300 tick, hướng ngẫu nhiên theo seed. `dir_deg` đo như góc bản đồ (từ +X ngược chiều kim đồng hồ: x = cos, z = sin); snapshot cho `null` khi không có gió.
+10. **Điểm xuất phát Đêm 3** là (0, 0, −30). Ticket không nêu, mà (0, 0, 0) lại nằm trong tháp chuông. Đêm 2 xuất phát ở (0, 0, 0) trên đảo A.
+11. **Lướt**: hướng là vận tốc ngang hiện tại (kể cả khi đang bay từ bục nhảy), nếu đứng yên thì theo hướng mặt. Đang lướt thì không nhảy. Hết lướt mà vẫn đang bay từ bục thì giữ tiếp vận tốc bục.
+12. **Bục nhảy** kích hoạt khi chân đứng trên mặt bục (XZ ≤ 1 m, cùng độ cao). Hướng ngang cố định từ tâm bục tới tâm đảo kia.
+13. **Vách và dốc**: bước được lên bậc cao ≤ 0.35 m (dốc mỗi tick chỉ tăng ≤ 0.12 m), cao hơn thì bị chặn. Đi ra mép cao hơn 0.35 m thì rơi xuống.
+14. **Snapshot**: `invuln` là boolean; `*_s` là số giây còn lại (làm tròn 3 chữ số); `ttl_s` của đom đóm ngẫu nhiên là `null`. Thứ tự sự kiện trong output: `night_start` ở tick 0, ngay sau snapshot đầu.
+15. **Điểm khi thua**: `end.score` vẫn ghi điểm đã tích được trong đêm (nạp đèn, Tỏa Sáng), không có thưởng cuối màn. Trong game, tổng điểm chỉ cộng các Đêm thắng.
+16. **Tạm dừng**: trong lúc dừng vẫn theo dõi trạng thái nút, nên nút giữ từ trước không kích hoạt lại khi tiếp tục. Tick bỏ tạm dừng chạy mô phỏng bình thường.
+
 ## Phase 1 (PRD-0, Test Contract v1.0)
 
 ### Kiến trúc

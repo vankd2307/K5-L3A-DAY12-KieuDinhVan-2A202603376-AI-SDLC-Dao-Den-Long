@@ -56,6 +56,20 @@ describe('headless CLI (contract B)', () => {
     const sc = file('bad-sc.json', JSON.stringify({ lanterns: [{ id: 'L9' }] }));
     expect(cli(['--seed', '1', '--night', '1', '--scenario', sc, '--ticks', '5', '--out', join(tmp, 'y.jsonl')]).code).toBe(2);
   });
+  it('--night 4 -> exit 2', () => {
+    expect(cli(['--seed', '1', '--night', '4', '--ticks', '5', '--out', join(tmp, 'n4.jsonl')]).code).toBe(2);
+  });
+  it.each(['2', '3'])('--night %s runs and reports the night', (n) => {
+    const out = join(tmp, `n${n}.jsonl`);
+    expect(cli(['--seed', '1', '--night', n, '--ticks', '10', '--out', out]).code).toBe(0);
+    expect(JSON.parse(readFileSync(out, 'utf8').split('\n')[0]!)).toMatchObject({ night: Number(n) });
+  });
+  it('a full Night 3 (21600 ticks) finishes in <= 30 s', () => {
+    const t0 = Date.now();
+    const r = cli(['--seed', '5', '--night', '3', '--ticks', '21600', '--out', join(tmp, 'perf.jsonl')]);
+    expect(r.code).toBe(0);
+    expect(Date.now() - t0).toBeLessThan(30_000);
+  });
   it('missing file -> non-zero exit', () => {
     const r = cli(['--seed', '1', '--night', '1', '--inputs', join(tmp, 'nope.json'), '--ticks', '5', '--out', join(tmp, 'z.jsonl')]);
     expect(r.code).not.toBe(0);

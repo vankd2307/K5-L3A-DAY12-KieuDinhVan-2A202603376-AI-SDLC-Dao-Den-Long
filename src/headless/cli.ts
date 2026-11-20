@@ -1,6 +1,6 @@
 /**
- * Test Contract v1.0 headless runner:
- *   <headless_cmd> --seed <int> --night 1 [--scenario f.json] [--inputs f.jsonl]
+ * Test Contract v1.1 headless runner:
+ *   <headless_cmd> --seed <int> --night <1|2|3> [--scenario f.json] [--inputs f.jsonl]
  *                  --ticks <int> --out f.jsonl [--snapshot-every <int, default 60>]
  * Exit 0 ok; 2 bad arguments / malformed inputs or scenario; 1 any other error.
  */
@@ -43,7 +43,8 @@ function readJson(path: string, what: string): unknown {
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
   const seed = int(args, '--seed', -(2 ** 31));
-  if (int(args, '--night', 1) !== 1) throw new FormatError('only --night 1 exists in this build');
+  const night = int(args, '--night', 1);
+  if (night > 3) throw new FormatError('--night must be 1, 2 or 3');
   const ticks = int(args, '--ticks', 0);
   const snapshotEvery = int(args, '--snapshot-every', 1, DEFAULT_SNAPSHOT_EVERY);
   const out = args.get('--out');
@@ -55,7 +56,7 @@ function main(): void {
   const frames = inputsPath ? parseInputs(readFileSync(inputsPath, 'utf8')) : [];
 
   const lines: string[] = [];
-  runHeadless({ seed, ticks, snapshotEvery, scenario, frames }, (o) => lines.push(JSON.stringify(o)));
+  runHeadless({ seed, night: night as 1 | 2 | 3, ticks, snapshotEvery, scenario, frames }, (o) => lines.push(JSON.stringify(o)));
   writeFileSync(out, lines.join('\n') + '\n');
 }
 
