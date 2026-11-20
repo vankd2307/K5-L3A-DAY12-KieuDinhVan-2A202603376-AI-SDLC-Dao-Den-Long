@@ -63,10 +63,10 @@ Thời gian đã tính cả khởi động node + tsx. Test CLI cũng tự kiể
 |---|---|---|
 | F1 | Gió Lạc (dải lụa #8FA3B8) | Luật: đạt (P13). Hiển thị: **chưa kiểm bằng mắt** |
 | F2 | Bùa Gió (đỏ #C8102E viền vàng) | Đạt: luật (P14) + chơi tay (thấy lá bùa trên cầu, HUD hiện "Bùa Gió 2s") |
-| F3 | Menu → giới thiệu (lời Ông Đăng) → chơi → kết quả → đêm sau → Bình Minh; thua thì chơi lại | Code xong; ảnh menu có. **Chưa chơi trọn chuỗi** |
+| F3 | Menu → giới thiệu (lời Ông Đăng) → chơi → kết quả → đêm sau → Bình Minh; thua thì chơi lại | Menu và giới thiệu Đêm 1: đạt (chơi tay). Màn kết quả, chuyển đêm, Bình Minh: **chưa kiểm** |
 | F4 | Tạm dừng Esc/P: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu | Đạt: logic (P16) + chơi tay (menu đủ 4 nút, đồng hồ đứng yên) |
-| F5 | Cài đặt âm lượng, độ nhạy chuột, lưu localStorage | Code xong; **chưa kiểm** việc tải lại trang |
-| F6 | Nhạc nền + 12 hiệu ứng (WebAudio tổng hợp) | Code xong; **chưa nghe thử** |
+| F5 | Cài đặt âm lượng, độ nhạy chuột, lưu localStorage | Màn cài đặt có 2 thanh trượt: đạt (chơi tay). Giữ giá trị sau khi tải lại trang: **chưa kiểm** |
+| F6 | Nhạc nền + 12 hiệu ứng (WebAudio tổng hợp) | Đạt: người chơi thử đã nghe nhạc và hiệu ứng, xác nhận ổn |
 | F7 | HUD đầy đủ | Đạt (ảnh headless + chơi tay: mũi tên, hồi chiêu, thời gian bùa, báo gió). Đồng hồ đỏ nhấp nháy ≤ 30 s: **chưa chụp** |
 | F8 | Bảng màu chuẩn, ánh sáng môi trường = 0.15 + 0.55 × tỉ lệ | Các mã hex lấy từ `src/render/palette.ts`; công thức ở `ambientFor()` |
 
@@ -76,6 +76,9 @@ Thời gian đã tính cả khởi động node + tsx. Test CLI cũng tự kiể
 |---|---|
 | ![](screenshots/play-pause-menu.png) | F4: Đêm 1 đang tạm dừng, 2/5 đèn, 400 điểm; Bóng Mực có viền #7A3CFF |
 | ![](screenshots/play-night2-bridge-charm.png) | Đêm 2: cầu tre, Bùa Gió đỏ viền vàng, bục nhảy vàng, icon hồi chiêu Lướt đang chạy, mũi tên chỉ đèn |
+| ![](screenshots/play-menu.png) | F3: menu chính |
+| ![](screenshots/play-intro-night1.png) | F3: giới thiệu Đêm 1, tên đảo + lời Ông Đăng |
+| ![](screenshots/play-settings.png) | F5: cài đặt âm lượng và độ nhạy chuột |
 | ![](screenshots/play-night3-wind.png) | Đêm 3: cơn gió (lá bay, chữ "Gió mạnh"), "Bùa Gió 2s", tầng 1 và tầng 2 phía sau |
 
 Sửa sau khi chơi tay: đèn đã sáng trông gần trắng (lớp phát sáng màu lõi #FFE9B0 quá mạnh), nên đổi lớp phát sáng sang #FFB347 với cường độ 0.75.
