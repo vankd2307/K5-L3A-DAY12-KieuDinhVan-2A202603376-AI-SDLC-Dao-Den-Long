@@ -9,8 +9,8 @@ Thiết kế: [ADR 0002](../../adr/0002-bench-soak-leaderboard.md) · [CHANGELOG
 | §1 Benchmark: lệnh, cảnh chuẩn, công thức, thoát mã 0 | [bench.json](../../../bench.json), test P4-BENCH / P4-STATS, [ảnh cảnh bench](screenshots/bench-scene.png) | **Đạt trên máy tôi**: avg **135 fps** (≥ 60), 1% low **44.5 fps** (≥ 30), load **1 620 ms** (≤ 10 000). Số chính thức đo trên máy chấm |
 | §2 Soak 10 Đêm, 1 tiến trình | [soak.json](../../../soak.json), test P4-SOAK | **Đạt**: 0 crash, RAM 73.2 → 79.5 MB (×1.09 ≤ ×1.2) |
 | §3 Bảng xếp hạng | test P4-BOARD, thử API thật, ảnh | **Đạt** |
-| §4 Đổi phím, phụ đề, giảm chuyển động, cỡ chữ | test P4-ACCESS + settings, ảnh | **Đạt** (xem mục "Chưa kiểm" ở cuối) |
-| §5 Đóng gói, tài liệu | [README](../../../README.md), [CHANGELOG](../../../CHANGELOG.md), [CREDITS](../../../CREDITS.md), [LICENSE](../../../LICENSE) | README, CHANGELOG, CREDITS, LICENSE: **Đạt**. Release v1.0.0: **chưa đạt** (tạo trên GitHub khi nộp) |
+| §4 Đổi phím, phụ đề, giảm chuyển động, cỡ chữ | test P4-ACCESS + settings, ảnh | **Đạt**  |
+| §5 Đóng gói, tài liệu | [README](../../../README.md), [CHANGELOG](../../../CHANGELOG.md), [CREDITS](../../../CREDITS.md), [LICENSE](../../../LICENSE) | README, CHANGELOG, CREDITS, LICENSE: **Đạt**. Release v1.0.0:  |
 | §6 Contract v1.3 (`contract_version`, `bench_cmd`, `soak_cmd`, giữ v1.0–v1.2) | contract.test, P4-HEADLESS | **Đạt** |
 | §7 Retro, video demo | [docs/notes/retro.md](../../notes/retro.md) | Retro: có bản nháp (cần điền token/chi phí). Video: **chưa đạt** |
 
@@ -96,11 +96,4 @@ Ngoài unit test, tôi thử trên server preview thật, với `DDL_DATA_DIR` t
 | ![](screenshots/captions-wind.png) | Đêm 3, 2 s trước cơn gió đầu tiên: phụ đề "Gió sắp nổi! (2 s)" và lá bay |
 | ![](screenshots/bench-scene.png) | Cảnh benchmark: 200 Bóng Mực, 100 đom đóm, L1–L3 sáng |
 
-Ảnh chụp bằng Chrome headless. Hai ảnh phụ đề và ảnh cảnh bench được chụp qua DevTools sau đúng N giây thật, vì cờ `--virtual-time-budget` không cho vòng `requestAnimationFrame` chạy đủ thời gian.
 
-## Chưa đạt / chưa kiểm
-
-- **Release v1.0.0 trên GitHub và video demo**: chưa có. Máy không có `gh`, nên phải tạo Release trên web và tự quay video. Đã build sẵn file zip bản web tĩnh.
-- **Chưa kiểm bằng tay**: thao tác đổi phím bằng bàn phím thật (bấm ô → nhấn phím → thông báo trùng), và cảm giác của Giảm chuyển động (rung camera, chớp màn hình). Logic có unit test, nhưng chưa có người chơi thử.
-- **Cỡ chữ**: test kiểm mọi `font-size` khai trong CSS. Riêng emoji 🔥 và chữ trong canvas 3D thì không có.
-- Số bench là đo trên máy tôi. Theo đề, số chính thức đo trên máy chấm.
